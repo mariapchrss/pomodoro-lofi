@@ -1,0 +1,41 @@
+{
+  "name": "pomodoro-lofi",
+  "version": "1.0.0",
+  "description": "Pomodoro Lo-fi para computador",
+  "author": "Maria Paula",
+  "main": "main.js",
+  "private": true,
+  "scripts": {
+    "start": "electron .",
+    "instalador": "electron-builder --win nsis"
+  },
+  "build": {
+    "appId": "app.pomodorolofi.desktop",
+    "productName": "Pomodoro Lo-fi",
+    "files": [
+      "main.js",
+      "preload.js",
+      "offline.html",
+      "icon.png"
+    ],
+    "directories": {
+      "output": "saida"
+    },
+    "win": {
+      "target": "nsis",
+      "icon": "icon.png"
+    },
+    "nsis": {
+      "oneClick": true,
+      "perMachine": false,
+      "createDesktopShortcut": true,
+      "createStartMenuShortcut": true,
+      "shortcutName": "Pomodoro Lo-fi",
+      "artifactName": "Instalar Pomodoro Lo-fi.exe"
+    }
+  },
+  "devDependencies": {
+    "electron": "^44.5.1",
+    "electron-builder": "^26.15.3"
+  }
+}

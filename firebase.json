@@ -1,0 +1,14 @@
+{
+  "hosting": {
+    "public": "pomodoro-fas/site",
+    "ignore": ["firebase.json", "**/.*"],
+    "cleanUrls": false,
+    "headers": [
+      { "source": "**/*.@(html|js|css|webmanifest)", "headers": [{ "key": "Cache-Control", "value": "no-cache" }] },
+      { "source": "**/*.@(png|gif|jpg|svg)", "headers": [{ "key": "Cache-Control", "value": "max-age=604800" }] }
+    ]
+  },
+  "firestore": {
+    "rules": "firebase-regras.txt"
+  }
+}

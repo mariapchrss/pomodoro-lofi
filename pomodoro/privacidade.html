@@ -1,0 +1,302 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Privacidade · Pomodoro Lo-fi</title>
+<link rel="icon" type="image/png" sizes="32x32" href="icons/favicon-32.png">
+<link rel="icon" type="image/png" sizes="16x16" href="icons/favicon-16.png">
+<link rel="icon" type="image/png" sizes="64x64" href="icons/favicon-64.png">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=VT323&family=Nunito:wght@400;600;700;800&display=swap">
+<style>
+:root{color-scheme:dark;--bg:#15131F;--card:#1D1A2C;--ink:#F1E6D8;--muted:#A69DB6;--line:rgba(241,230,216,.12);--accent:#F2B872;--soft:rgba(242,184,114,.12)}
+@media (prefers-color-scheme:light){:root{color-scheme:light;--bg:#EDE6EE;--card:#FBF8FA;--ink:#2B2540;--muted:#6B6382;--line:rgba(43,37,64,.13);--accent:#C47A26;--soft:rgba(196,122,38,.1)}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.65 "Nunito",system-ui,sans-serif;padding:32px 16px 64px}
+main{max-width:720px;margin:0 auto;background:var(--card);border:1px solid var(--line);border-radius:24px;padding:28px clamp(18px,5vw,40px)}
+.bar{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:18px}
+.back{font-weight:700}
+.langs{display:flex;gap:6px}
+.langs button{font:700 13px "Nunito",sans-serif;padding:5px 12px;border-radius:999px;border:1px solid var(--line);background:transparent;color:var(--ink);cursor:pointer}
+.langs button[aria-pressed="true"]{background:var(--accent);border-color:var(--accent);color:#1D1A2C}
+h1{font:400 44px/1 "VT323",monospace;letter-spacing:.03em;margin:0 0 6px}
+h2{font:400 28px/1.1 "VT323",monospace;letter-spacing:.03em;margin:30px 0 8px;color:var(--accent)}
+p,li{max-width:65ch}
+ul{padding-left:20px}
+.meta{color:var(--muted);font-size:14px;margin:0 0 20px}
+a{color:var(--accent)}
+.about{display:flex;gap:16px;align-items:flex-start;padding:18px;border-radius:18px;background:var(--soft);border:1px solid var(--line);margin:0 0 8px}
+.about .emoji{font-size:40px;line-height:1}
+.about p{margin:0}
+.about .mail{display:inline-block;margin-top:8px;font-weight:700}
+article[hidden]{display:none}
+</style>
+</head>
+<body>
+<main>
+  <div class="bar">
+    <a class="back" id="back" href="./">← voltar para o pomodoro</a>
+    <div class="langs" role="group" aria-label="Idioma / Language">
+      <button type="button" data-l="pt">Português</button>
+      <button type="button" data-l="en">English</button>
+      <button type="button" data-l="es">Español</button>
+    </div>
+  </div>
+
+  <!-- ===================== PORTUGUÊS ===================== -->
+  <article lang="pt-BR" data-lang="pt">
+    <div class="about">
+      <span class="emoji" aria-hidden="true">🍅</span>
+      <div>
+        <p><b>Oi! Eu me chamo Maria Paula</b> e sou desenvolvedora autônoma. Criei o Pomodoro Lo-fi para deixar os estudos e o trabalho mais leves, com cenários aconchegantes, sons tranquilos e bichinhos para fazer companhia enquanto você foca.</p>
+        <p>Dúvidas, sugestões, bugs ou pedidos sobre os seus dados? É só me escrever:</p>
+        <a class="mail" href="mailto:mp.christiee@gmail.com">mp.christiee@gmail.com</a>
+      </div>
+    </div>
+
+    <h1>Política de privacidade</h1>
+    <p class="meta">Última atualização: 2 de outubro de 2026</p>
+    <p>Este site é um cronômetro Pomodoro. Você pode usá-lo sem criar conta. Se criar uma conta, alguns dados passam a ser guardados na nuvem para você acessar seu progresso em outros aparelhos. Aqui explico quais dados são esses, para que servem e como você controla tudo isso, conforme a Lei Geral de Proteção de Dados (Lei nº 13.709/2018, LGPD).</p>
+
+
+    <h2>Sem conta: tudo fica no seu aparelho</h2>
+    <p>Se você não entrar numa conta, suas tarefas, preferências, histórico, diário e progresso ficam guardados só no armazenamento local do seu navegador (<i>localStorage</i>). Nada disso é enviado para mim. Você pode apagar esses dados limpando os dados do site nas configurações do navegador.</p>
+
+    <h2>Com conta: o que eu guardo</h2>
+    <ul>
+      <li><b>Dados de login:</b> seu e-mail e, se entrar com Google, seu nome e foto de perfil do Google (uso só o primeiro nome como sugestão de apelido). As senhas são tratadas diretamente pelo Firebase e nunca ficam visíveis para mim.</li>
+      <li><b>Dados de uso do pomodoro:</b> tarefas, histórico de pomodoros por dia e por atividade, nível, XP, conquistas, cenário, bichinho e a cor dele, cores, rotinas, relógios do mundo, lembrete e copos de água, idioma e demais preferências, e o link de música que você colar.</li>
+      <li><b>Diário e notas:</b> o que você escrever no diário (texto e humor do dia) e no bloco de notas.</li>
+      <li><b>Perfil do ranking:</b> apelido, código de amigo, nível, XP, sequência de dias, pomodoros e copos de água dos últimos 21 dias, bichinho escolhido e a cor dele, e a plantinha que você planta. Só se você ligar "mostrar às amizades o que estou fazendo agora": o modo do cronômetro (foco ou pausa), a atividade e quanto tempo falta.</li>
+      <li><b>Amizades:</b> os pedidos de amizade que você manda ou recebe (com o apelido de quem pediu), se foram aceitos, e a data em que você aceitou esta política.</li>
+      <li><b>Focar junto:</b> quando você convida alguém ou entra numa sala, guardo as duas contas, os apelidos e o estado do cronômetro (modo, se está correndo e quanto falta). Só as duas pessoas veem. A sala é apagada quando alguém sai, ou sozinha depois de 12 horas parada.</li>
+    </ul>
+    <p>Não coleto dados sensíveis, não faço propaganda e não vendo dados.</p>
+
+    <h2>Para que uso</h2>
+    <ul>
+      <li>Criar e manter sua conta e deixar você entrar nela;</li>
+      <li>Sincronizar seu progresso entre aparelhos;</li>
+      <li>Mostrar o ranking para as amizades que você aceitou.</li>
+    </ul>
+    <p>A base legal é a execução do serviço que você pediu ao criar a conta (art. 7º, V, da LGPD) e o seu consentimento para o ranking (art. 7º, I), que você pode retirar a qualquer momento.</p>
+
+    <h2>Quem pode ver o quê</h2>
+    <ul>
+      <li>Seus dados de uso, seu diário, suas notas e seu e-mail só podem ser lidos por você, com a sua conta.</li>
+      <li>O perfil do ranking pode ser visto por outras pessoas com conta no site, que o usam para achar você pelo código de amigo. Ele não inclui seu e-mail. Se você desligar "aparecer no ranking dos amigos", o perfil é apagado.</li>
+      <li>Um pedido de amizade só pode ser visto pelas duas pessoas envolvidas. Qualquer uma das duas pode desfazer a amizade quando quiser.</li>
+    </ul>
+
+    <h2>Onde os dados ficam</h2>
+    <p>Uso o <a href="https://firebase.google.com/support/privacy" target="_blank" rel="noopener">Firebase</a>, um serviço do Google, para login e armazenamento, com o banco de dados em São Paulo. Parte do serviço de login pode passar por servidores fora do Brasil, com as garantias do próprio Google (art. 33 da LGPD). O site também fica hospedado no Firebase (Firebase Hosting); até outubro de 2026 ficava na <a href="https://www.netlify.com/privacy/" target="_blank" rel="noopener">Netlify</a>.</p>
+
+    <h2>Caixa de sugestões</h2>
+    <p>Se você mandar uma sugestão pelo botão 💡, guardo o texto, o tipo (ideia, problema, elogio ou outro), o idioma do site, a data e, se você estiver com a conta aberta, seu apelido. O contato para resposta é opcional. A sugestão fica no Firebase, onde só eu consigo ler, e uma cópia chega no meu e-mail pelo <a href="https://web3forms.com/privacy" target="_blank" rel="noopener">Web3Forms</a>. Uso só para melhorar o site e responder você. Apago quando não precisar mais; se quiser que eu apague a sua antes, é só pedir por e-mail.</p>
+
+    <h2>Clima de verdade</h2>
+    <p>Se você ligar o clima nos ajustes, a cidade escolhida fica só no seu aparelho (não vai para a nuvem). A cada 30 minutos o site pergunta o tempo ao <a href="https://open-meteo.com/en/terms" target="_blank" rel="noopener">Open-Meteo</a>, mandando só as coordenadas aproximadas da cidade, sem nenhum outro dado seu. Se usar "minha localização", o navegador pede sua permissão antes.</p>
+
+    <h2>Música do Spotify e do YouTube</h2>    <p>Se você usar o painel de música, o player do Spotify ou do YouTube é carregado dentro da página e segue as regras de privacidade dessas empresas, inclusive cookies próprios. Os sons ambiente (chuva, lareira, batida lo-fi etc.) são gerados no seu navegador e não usam serviços de terceiros.</p>
+
+    <h2>Por quanto tempo guardo</h2>
+    <p>Enquanto sua conta existir. Quando você exclui a conta, os dados são apagados da nuvem na hora.</p>
+
+    <h2>Seus direitos</h2>
+    <p>Pela LGPD (art. 18) você pode, entre outros direitos:</p>
+    <ul>
+      <li><b>acessar e levar seus dados:</b> em ☁ conta → "baixar meus dados", você recebe um arquivo com tudo;</li>
+      <li><b>corrigir:</b> altere apelido, tarefas e preferências no próprio site;</li>
+      <li><b>retirar o consentimento do ranking:</b> desligue "aparecer no ranking dos amigos";</li>
+      <li><b>excluir:</b> em ☁ conta → "excluir minha conta";</li>
+      <li>fazer qualquer outro pedido pelo e-mail <a href="mailto:mp.christiee@gmail.com">mp.christiee@gmail.com</a>. Você também pode reclamar à Autoridade Nacional de Proteção de Dados (ANPD).</li>
+    </ul>
+
+    <h2>Segurança</h2>
+    <p>A comunicação é criptografada (https) e as regras do banco de dados só deixam cada pessoa ler e alterar os próprios dados. Nenhum sistema é 100% imune a falhas. Se acontecer um incidente que possa trazer risco a você, aviso você e a ANPD.</p>
+
+    <h2>Crianças e adolescentes</h2>
+    <p>Menores de 18 anos devem usar a conta com o conhecimento e o consentimento de um responsável, conforme o art. 14 da LGPD.</p>
+
+    <h2>Mudanças nesta política</h2>
+    <p>Se esta política mudar, a data no topo será atualizada. Mudanças importantes serão avisadas no próprio site.</p>
+  </article>
+
+  <!-- ===================== ENGLISH ===================== -->
+  <article lang="en" data-lang="en" hidden>
+    <div class="about">
+      <span class="emoji" aria-hidden="true">🍅</span>
+      <div>
+        <p><b>Hi! My name is Maria Paula</b> and I'm an independent developer. I made Pomodoro Lo-fi to make studying and working feel lighter, with cozy scenes, calm sounds and little pets to keep you company while you focus.</p>
+        <p>Questions, ideas, bugs or requests about your data? Just write to me:</p>
+        <a class="mail" href="mailto:mp.christiee@gmail.com">mp.christiee@gmail.com</a>
+      </div>
+    </div>
+
+    <h1>Privacy policy</h1>
+    <p class="meta">Last updated: October 2, 2026</p>
+    <p>This site is a Pomodoro timer. You can use it without an account. If you create one, some data is stored in the cloud so you can access your progress on other devices. Here I explain what that data is, what it is used for and how you control it, in line with Brazil's General Data Protection Law (Law 13,709/2018, LGPD).</p>
+
+
+    <h2>Without an account: everything stays on your device</h2>
+    <p>If you don't sign in, your tasks, preferences, history, diary and progress are stored only in your browser's local storage (<i>localStorage</i>). None of it is sent to me. You can delete it by clearing this site's data in your browser settings.</p>
+
+    <h2>With an account: what I store</h2>
+    <ul>
+      <li><b>Sign-in data:</b> your email and, if you sign in with Google, your Google name and profile picture (I only use your first name as a nickname suggestion). Passwords are handled directly by Firebase and are never visible to me.</li>
+      <li><b>Pomodoro usage data:</b> tasks, pomodoro history by day and activity, level, XP, achievements, scene, pet and its color, colors, routines, world clocks, water reminder and glasses of water, language and other preferences, and any music link you paste.</li>
+      <li><b>Diary and notes:</b> what you write in the diary (text and mood of the day) and in the notepad.</li>
+      <li><b>Ranking profile:</b> nickname, friend code, level, XP, streak, pomodoros and glasses of water in the last 21 days, chosen pet and its color, and the plant you grow. Only if you turn on "show friends what I am doing right now": the timer mode (focus or break), the activity and how much time is left.</li>
+      <li><b>Friendships:</b> the friend requests you send or receive (with the requester's nickname), whether they were accepted, and the date you accepted this policy.</li>
+      <li><b>Focus together:</b> when you invite someone or join a room, I store both accounts, the nicknames and the timer state (mode, whether it is running and how much is left). Only the two people can see it. The room is deleted when someone leaves, or on its own after 12 idle hours.</li>
+    </ul>
+    <p>I don't collect sensitive data, I don't run ads and I don't sell data.</p>
+
+    <h2>What I use it for</h2>
+    <ul>
+      <li>Creating and keeping your account and letting you sign in;</li>
+      <li>Syncing your progress across devices;</li>
+      <li>Showing the ranking to the friends you accepted.</li>
+    </ul>
+    <p>The legal basis is performing the service you asked for when creating the account (LGPD art. 7, V) and your consent for the ranking (art. 7, I), which you can withdraw at any time.</p>
+
+    <h2>Who can see what</h2>
+    <ul>
+      <li>Your usage data, diary, notes and email can only be read by you, with your account.</li>
+      <li>Your ranking profile can be seen by other people with an account, who use it to find you by friend code. It never includes your email. If you turn off "show me in friends' ranking", the profile is deleted.</li>
+      <li>A friend request can only be seen by the two people involved. Either of you can remove the friendship at any time.</li>
+    </ul>
+
+    <h2>Where the data is kept</h2>
+    <p>I use <a href="https://firebase.google.com/support/privacy" target="_blank" rel="noopener">Firebase</a>, a Google service, for sign-in and storage, with the database in São Paulo, Brazil. Part of the sign-in service may run on servers outside Brazil, under Google's own safeguards (LGPD art. 33). The site itself is also hosted on Firebase (Firebase Hosting); until October 2026 it was hosted by <a href="https://www.netlify.com/privacy/" target="_blank" rel="noopener">Netlify</a>.</p>
+
+    <h2>Suggestion box</h2>
+    <p>If you send a suggestion through the 💡 button, I store the text, the type (idea, problem, compliment or other), the site language, the date and, if you're signed in, your nickname. The contact for a reply is optional. The suggestion is kept in Firebase, where only I can read it, and a copy reaches my e-mail through <a href="https://web3forms.com/privacy" target="_blank" rel="noopener">Web3Forms</a>. I use it only to improve the site and reply to you. I delete it when it's no longer needed; if you want yours deleted sooner, just ask by e-mail.</p>
+
+    <h2>Real weather</h2>
+    <p>If you turn on the weather in settings, the chosen city stays only on your device (it does not go to the cloud). Every 30 minutes the site asks <a href="https://open-meteo.com/en/terms" target="_blank" rel="noopener">Open-Meteo</a> for the weather, sending only the approximate coordinates of the city, without any other data about you. If you use "my location", the browser asks for your permission first.</p>
+
+    <h2>Spotify and YouTube music</h2>    <p>If you use the music panel, the Spotify or YouTube player loads inside the page and follows those companies' privacy rules, including their own cookies. The ambient sounds (rain, fireplace, lo-fi beat, etc.) are generated in your browser and don't use third-party services.</p>
+
+    <h2>How long I keep it</h2>
+    <p>For as long as your account exists. When you delete your account, the data is removed from the cloud right away.</p>
+
+    <h2>Your rights</h2>
+    <p>Under the LGPD (art. 18) you can, among other rights:</p>
+    <ul>
+      <li><b>access and take your data:</b> in ☁ account → "download my data" you get a file with everything;</li>
+      <li><b>correct it:</b> change your nickname, tasks and preferences on the site;</li>
+      <li><b>withdraw consent for the ranking:</b> turn off "show me in friends' ranking";</li>
+      <li><b>delete it:</b> in ☁ account → "delete my account";</li>
+      <li>make any other request at <a href="mailto:mp.christiee@gmail.com">mp.christiee@gmail.com</a>. You can also file a complaint with Brazil's National Data Protection Authority (ANPD).</li>
+    </ul>
+
+    <h2>Security</h2>
+    <p>Communication is encrypted (https) and the database rules only let each person read and change their own data. No system is 100% immune to failure. If an incident happens that may put you at risk, I will notify you and the ANPD.</p>
+
+    <h2>Children and teenagers</h2>
+    <p>People under 18 should use an account with the knowledge and consent of a parent or guardian, as required by LGPD art. 14.</p>
+
+    <h2>Changes to this policy</h2>
+    <p>If this policy changes, the date at the top will be updated. Important changes will be announced on the site.</p>
+  </article>
+
+  <!-- ===================== ESPAÑOL ===================== -->
+  <article lang="es" data-lang="es" hidden>
+    <div class="about">
+      <span class="emoji" aria-hidden="true">🍅</span>
+      <div>
+        <p><b>¡Hola! Me llamo Maria Paula</b> y soy desarrolladora independiente. Creé Pomodoro Lo-fi para que estudiar y trabajar sea más ligero, con escenarios acogedores, sonidos tranquilos y mascotitas que te acompañan mientras te enfocas.</p>
+        <p>¿Dudas, sugerencias, errores o pedidos sobre tus datos? Solo escríbeme:</p>
+        <a class="mail" href="mailto:mp.christiee@gmail.com">mp.christiee@gmail.com</a>
+      </div>
+    </div>
+
+    <h1>Política de privacidad</h1>
+    <p class="meta">Última actualización: 2 de octubre de 2026</p>
+    <p>Este sitio es un temporizador Pomodoro. Puedes usarlo sin crear una cuenta. Si creas una, algunos datos se guardan en la nube para que puedas acceder a tu progreso en otros dispositivos. Aquí explico qué datos son, para qué sirven y cómo los controlas, conforme a la Ley General de Protección de Datos de Brasil (Ley 13.709/2018, LGPD).</p>
+
+
+    <h2>Sin cuenta: todo queda en tu dispositivo</h2>
+    <p>Si no inicias sesión, tus tareas, preferencias, historial, diario y progreso se guardan solo en el almacenamiento local de tu navegador (<i>localStorage</i>). Nada de eso me llega. Puedes borrarlo limpiando los datos de este sitio en la configuración del navegador.</p>
+
+    <h2>Con cuenta: qué guardo</h2>
+    <ul>
+      <li><b>Datos de acceso:</b> tu correo y, si entras con Google, tu nombre y foto de perfil de Google (solo uso tu primer nombre como sugerencia de apodo). Las contraseñas las maneja directamente Firebase y nunca las veo.</li>
+      <li><b>Datos de uso del pomodoro:</b> tareas, historial de pomodoros por día y por actividad, nivel, XP, logros, escenario, mascota y su color, colores, rutinas, relojes del mundo, recordatorio y vasos de agua, idioma y demás preferencias, y el enlace de música que pegues.</li>
+      <li><b>Diario y notas:</b> lo que escribas en el diario (texto y estado de ánimo del día) y en la libreta de notas.</li>
+      <li><b>Perfil del ranking:</b> apodo, código de amigo, nivel, XP, racha de días, pomodoros y vasos de agua de los últimos 21 días, mascota elegida y su color, y la planta que cultivas. Solo si activas "mostrar a mis amistades lo que estoy haciendo ahora": el modo del cronómetro (enfoque o pausa), la actividad y cuánto tiempo falta.</li>
+      <li><b>Amistades:</b> las solicitudes de amistad que envías o recibes (con el apodo de quien la envió), si fueron aceptadas, y la fecha en que aceptaste esta política.</li>
+      <li><b>Enfocarse juntas:</b> cuando invitas a alguien o entras en una sala, guardo las dos cuentas, los apodos y el estado del temporizador (modo, si está corriendo y cuánto falta). Solo las dos personas lo ven. La sala se borra cuando alguien sale, o sola después de 12 horas parada.</li>
+    </ul>
+    <p>No recojo datos sensibles, no hago publicidad y no vendo datos.</p>
+
+    <h2>Para qué los uso</h2>
+    <ul>
+      <li>Crear y mantener tu cuenta y permitirte iniciar sesión;</li>
+      <li>Sincronizar tu progreso entre dispositivos;</li>
+      <li>Mostrar el ranking a las amistades que aceptaste.</li>
+    </ul>
+    <p>La base legal es la prestación del servicio que pediste al crear la cuenta (art. 7, V, de la LGPD) y tu consentimiento para el ranking (art. 7, I), que puedes retirar en cualquier momento.</p>
+
+    <h2>Quién puede ver qué</h2>
+    <ul>
+      <li>Tus datos de uso, tu diario, tus notas y tu correo solo los puedes leer tú, con tu cuenta.</li>
+      <li>Tu perfil del ranking lo pueden ver otras personas con cuenta, que lo usan para encontrarte por el código de amigo. Nunca incluye tu correo. Si desactivas "aparecer en el ranking de amigos", el perfil se borra.</li>
+      <li>Una solicitud de amistad solo la ven las dos personas involucradas. Cualquiera de las dos puede quitar la amistad cuando quiera.</li>
+    </ul>
+
+    <h2>Dónde se guardan los datos</h2>
+    <p>Uso <a href="https://firebase.google.com/support/privacy" target="_blank" rel="noopener">Firebase</a>, un servicio de Google, para el acceso y el almacenamiento, con la base de datos en São Paulo, Brasil. Parte del servicio de acceso puede pasar por servidores fuera de Brasil, con las garantías del propio Google (art. 33 de la LGPD). El sitio también está alojado en Firebase (Firebase Hosting); hasta octubre de 2026 estaba en <a href="https://www.netlify.com/privacy/" target="_blank" rel="noopener">Netlify</a>.</p>
+
+    <h2>Buzón de sugerencias</h2>
+    <p>Si envías una sugerencia con el botón 💡, guardo el texto, el tipo (idea, problema, elogio u otro), el idioma del sitio, la fecha y, si iniciaste sesión, tu apodo. El contacto para responderte es opcional. La sugerencia queda en Firebase, donde solo yo puedo leerla, y una copia llega a mi e-mail mediante <a href="https://web3forms.com/privacy" target="_blank" rel="noopener">Web3Forms</a>. La uso solo para mejorar el sitio y responderte. La borro cuando ya no la necesito; si quieres que borre la tuya antes, pídemelo por e-mail.</p>
+
+    <h2>Clima real</h2>
+    <p>Si activas el clima en los ajustes, la ciudad elegida queda solo en tu dispositivo (no va a la nube). Cada 30 minutos el sitio le pregunta el clima a <a href="https://open-meteo.com/en/terms" target="_blank" rel="noopener">Open-Meteo</a>, enviando solo las coordenadas aproximadas de la ciudad, sin ningún otro dato tuyo. Si usas "mi ubicación", el navegador te pide permiso antes.</p>
+
+    <h2>Música de Spotify y YouTube</h2>    <p>Si usas el panel de música, el reproductor de Spotify o YouTube se carga dentro de la página y sigue las reglas de privacidad de esas empresas, incluidas sus propias cookies. Los sonidos ambientales (lluvia, chimenea, ritmo lo-fi, etc.) se generan en tu navegador y no usan servicios de terceros.</p>
+
+    <h2>Por cuánto tiempo los guardo</h2>
+    <p>Mientras tu cuenta exista. Cuando eliminas la cuenta, los datos se borran de la nube de inmediato.</p>
+
+    <h2>Tus derechos</h2>
+    <p>Según la LGPD (art. 18) puedes, entre otros derechos:</p>
+    <ul>
+      <li><b>acceder a tus datos y llevártelos:</b> en ☁ cuenta → "descargar mis datos" recibes un archivo con todo;</li>
+      <li><b>corregirlos:</b> cambia tu apodo, tareas y preferencias en el propio sitio;</li>
+      <li><b>retirar el consentimiento del ranking:</b> desactiva "aparecer en el ranking de amigos";</li>
+      <li><b>eliminarlos:</b> en ☁ cuenta → "eliminar mi cuenta";</li>
+      <li>hacer cualquier otro pedido en <a href="mailto:mp.christiee@gmail.com">mp.christiee@gmail.com</a>. También puedes presentar una queja ante la Autoridad Nacional de Protección de Datos de Brasil (ANPD).</li>
+    </ul>
+
+    <h2>Seguridad</h2>
+    <p>La comunicación está cifrada (https) y las reglas de la base de datos solo permiten que cada persona lea y cambie sus propios datos. Ningún sistema es 100% infalible. Si ocurre un incidente que pueda ponerte en riesgo, te avisaré a ti y a la ANPD.</p>
+
+    <h2>Niñas, niños y adolescentes</h2>
+    <p>Las personas menores de 18 años deben usar la cuenta con el conocimiento y el consentimiento de un responsable, según el art. 14 de la LGPD.</p>
+
+    <h2>Cambios en esta política</h2>
+    <p>Si esta política cambia, la fecha de arriba se actualizará. Los cambios importantes se avisarán en el propio sitio.</p>
+  </article>
+</main>
+<script>
+(() => {
+  const BACK = {pt:'← voltar para o pomodoro', en:'← back to the pomodoro', es:'← volver al pomodoro'};
+  const LOC = {pt:'pt-BR', en:'en', es:'es'};
+  let lang = '';
+  try { lang = localStorage.getItem('pomodoro-lang') || ''; } catch (e) {}
+  if (!BACK[lang]) { const n = (navigator.language || 'pt').slice(0, 2); lang = BACK[n] ? n : 'pt'; }
+  function show(l) {
+    lang = l;
+    document.querySelectorAll('article').forEach(a => { a.hidden = a.dataset.lang !== l; });
+    document.querySelectorAll('.langs button').forEach(b => b.setAttribute('aria-pressed', b.dataset.l === l));
+    document.getElementById('back').textContent = BACK[l];
+    document.documentElement.lang = LOC[l];
+  }
+  document.querySelectorAll('.langs button').forEach(b => b.onclick = () => { try { localStorage.setItem('pomodoro-lang', b.dataset.l); } catch (e) {} show(b.dataset.l); });
+  show(lang);
+})();
+</script>
+</body>
+</html>

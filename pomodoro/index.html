@@ -1,0 +1,753 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Pomodoro Lo-fi</title>
+<meta name="description" content="Pomodoro lo-fi com cenários, sons ambiente, bichinhos, níveis e conquistas.">
+<meta name="theme-color" content="#15131F">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Pomodoro">
+<meta name="apple-mobile-web-app-status-bar-style" content="black">
+<link rel="icon" type="image/png" sizes="32x32" href="icons/favicon-32.png">
+<link rel="icon" type="image/png" sizes="16x16" href="icons/favicon-16.png">
+<link rel="icon" type="image/png" sizes="64x64" href="icons/favicon-64.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=VT323&family=Nunito:wght@400;600;700;800&display=swap">
+<link rel="stylesheet" href="css/style.css">
+<script>
+(() => { let l; try { l = localStorage.getItem('pomodoro-look'); } catch (e) {}
+  if (!l) l = matchMedia('(prefers-color-scheme: dark)').matches ? 'noite' : 'dia';
+  document.documentElement.dataset.look = l;
+  try { const c = localStorage.getItem('pomodoro-color'); if (c) document.documentElement.dataset.color = c; } catch (e) {} })();
+</script>
+</head>
+<body data-mode="focus">
+<canvas id="sky" aria-hidden="true"></canvas>
+
+<div class="page">
+  <header class="top">
+    <div class="brand">pomodoro <span>lo-fi</span></div>
+    <button class="lvl" id="lvlPill" type="button" aria-label="Ver meu progresso">
+      <span class="ic" id="lvlIc">🌱</span><span class="nm" id="lvlNm">Sementinha</span>
+      <span class="bar"><i id="lvlBar"></i></span><span class="streak" id="lvlStreak"></span>
+    </button>
+    <div class="toolbar">
+      <select class="chip langsel" id="langSel" aria-label="Idioma" title="Mudar idioma" data-noi18n>
+        <option value="pt">🌐 Português</option>
+        <option value="en">🌐 English</option>
+        <option value="es">🌐 Español</option>
+      </select>
+      <button class="chip chestchip" id="chestBtn" type="button" hidden title="baú diário: abra uma vez por dia">🎁 baú</button>
+      <button class="chip coinchip" id="coinBtn" type="button" title="moedas: abrir a lojinha">🪙 <b id="coinVal" data-noi18n>0</b></button>
+      <button class="chip ideachip" id="ideaBtn" type="button" title="mande uma ideia ou conte um problema">💡 sugestões<b class="ideabadge" id="ideaBadge" hidden data-noi18n></b></button>
+      <button class="chip" id="acctBtn" type="button">☁ entrar</button>
+      <button class="chip" id="lookBtn" type="button">☀ modo dia</button>
+      <button class="chip" id="stopAll" type="button" hidden>🔇 parar sons</button>
+      <button class="chip installchip" id="installBtn" type="button" hidden title="instalar o pomodoro como app no celular ou no computador">📲 instalar app</button>
+      <button class="chip" id="zenBtn" type="button" title="esconde tudo e deixa só o cronômetro">🎯 foco total</button>
+      <button class="chip" id="arrangeBtn" type="button" title="mude os painéis de lugar do seu jeito">🧩 organizar</button>
+      <button class="chip" id="fsBtn" type="button">⛶ tela cheia</button>
+    </div>
+  </header>
+
+  <div class="hero">
+    <section class="glass timer" aria-label="Cronômetro">
+      <div class="pet idle" id="pet" aria-hidden="true">
+        <canvas id="petCanvas" width="16" height="16"></canvas><span class="bubble" id="petBubble">♪</span>
+      </div>
+      <div class="buddies" id="buddies" hidden></div>
+      <div class="roombar" id="roomBar" hidden><canvas width="16" height="16" id="roomPet" aria-hidden="true"></canvas><span id="roomTxt" data-noi18n></span><button class="linkbtn" id="roomLeave" type="button">sair</button></div>
+      <div class="modebar">
+        <div class="modes" role="group" aria-label="Modo">
+          <button type="button" data-mode="focus">foco</button>
+          <button type="button" data-mode="short">pausa curta</button>
+          <button type="button" data-mode="long">pausa longa</button>
+        </div>
+        <div class="seqinfo" id="seqInfo" hidden></div>
+        <button class="gear" id="gearBtn" type="button" aria-expanded="false" aria-controls="settingsBox" aria-label="Ajustes" title="Ajustes">⚙</button>
+      </div>
+      <div class="settings" id="settingsBox" hidden>
+        <div class="settings-head"><b>ajustes</b><button class="del" id="gearClose" type="button" aria-label="Fechar ajustes">×</button></div>
+        <span class="sub">rotina</span>
+        <div class="routines" id="routines"></div>
+        <div id="myRoutinesWrap" hidden>
+          <span class="sub">minhas rotinas</span>
+          <div class="routines" id="myRoutines"></div>
+        </div>
+        <div class="grid" id="classicCfg">
+          <label for="cfg-focus">Foco (min)</label><input type="number" id="cfg-focus" min="1" max="180">
+          <label for="cfg-short">Pausa curta (min)</label><input type="number" id="cfg-short" min="1" max="120">
+          <label for="cfg-long">Pausa longa (min)</label><input type="number" id="cfg-long" min="1" max="120">
+          <label for="cfg-every">Pausa longa a cada</label><input type="number" id="cfg-every" min="2" max="10">
+        </div>
+        <div class="seqedit" id="seqEditor" hidden>
+          <ol class="steps" id="steps"></ol>
+          <div class="stepadd">
+            <button class="chip" type="button" data-add="focus">+ foco</button>
+            <button class="chip" type="button" data-add="short">+ pausa</button>
+            <button class="chip" type="button" data-add="long">+ pausa longa</button>
+          </div>
+          <label class="sw-row" for="seqLoop"><input type="checkbox" id="seqLoop"> <span>repetir a sequência quando acabar</span></label>
+          <p class="musicmsg" id="seqSum"></p>
+        </div>
+
+        <div class="savert">
+          <span class="sub">salvar a rotina atual</span>
+          <div class="savert-row">
+            <input type="text" id="rtName" maxlength="30" placeholder="nome (ex.: jogando)" aria-label="Nome da rotina">
+            <select id="rtAct" aria-label="Usar quando a atividade for"></select>
+            <button class="chip" id="rtSave" type="button">💾 salvar</button>
+          </div>
+          <p class="musicmsg">ligada a uma atividade, a rotina entra sozinha quando você escolhe essa atividade.</p>
+        </div>
+
+        <span class="sub">relógios do mundo</span>
+        <ul class="clocks" id="clockList"></ul>
+        <select id="clockAdd" class="clockadd" aria-label="Adicionar cidade"></select>
+
+        <span class="sub">lembrete de água</span>
+        <div class="waterCfg">
+          <label class="sw-row" for="cfg-water"><input type="checkbox" id="cfg-water"> <span>💧 meu bichinho me lembra de beber água</span></label>
+          <label class="sw-row" id="waterEveryRow" for="cfg-waterEvery"><span>a cada</span>
+            <select id="cfg-waterEvery">
+              <option value="15">15 min</option><option value="20">20 min</option><option value="30">30 min</option><option value="45">45 min</option>
+              <option value="60">1 hora</option><option value="90">1h30</option><option value="120">2 horas</option>
+            </select>
+          </label>
+          <div class="waterVol">
+            <span>🔔 volume</span>
+            <div class="vol">
+              <button type="button" class="vb" id="waterVolDown" aria-label="Diminuir volume do lembrete">−</button>
+              <input type="range" id="cfg-waterVol" min="0" max="1" step="0.05" aria-label="Volume do lembrete de água">
+              <button type="button" class="vb" id="waterVolUp" aria-label="Aumentar volume do lembrete">+</button>
+            </div>
+            <span class="mv" id="waterVolVal">70%</span>
+          </div>
+          <button class="chip" id="waterTest" type="button">🔔 testar agora</button>
+        </div>
+
+        <span class="sub">clima de verdade</span>
+        <div class="climaCfg">
+          <label class="sw-row" for="climaOn"><input type="checkbox" id="climaOn"> <span>🌦️ o cenário chove, neva ou fica nublado junto com a minha cidade</span></label>
+          <div id="climaPick" hidden>
+            <p class="musicmsg" id="climaWhere"></p>
+            <form class="climaform" id="climaForm">
+              <input type="text" id="climaCity" maxlength="60" placeholder="sua cidade (ex.: Manaus)" aria-label="Sua cidade" autocomplete="off">
+              <button class="chip" type="submit">buscar</button>
+            </form>
+            <div class="climares" id="climaResults"></div>
+            <button class="linkbtn" id="climaGeo" type="button">📍 usar minha localização</button>
+            <p class="musicmsg" id="climaMsg"></p>
+            <p class="musicmsg">a cidade fica só neste aparelho. o tempo vem do Open-Meteo.</p>
+          </div>
+        </div>
+
+        <span class="sub">outras opções</span>
+        <div class="grid">
+          <label for="cfg-auto">Começar o próximo sozinho</label><input type="checkbox" id="cfg-auto">
+          <label for="cfg-sound">Sininho ao terminar</label><input type="checkbox" id="cfg-sound">
+          <label for="cfg-notify">Aviso quando o tempo acabar (mesmo em outra aba)</label><input type="checkbox" id="cfg-notify">
+          <label for="cfg-pixel">Relógio em pixel</label><input type="checkbox" id="cfg-pixel">
+        </div>
+        <p style="margin:12px 0 0"><button class="linkbtn" id="clearDay" type="button">zerar a contagem de hoje</button></p>
+        <p style="margin:8px 0 0"><button class="linkbtn" id="importBtn" type="button">📥 carregar meus dados de um arquivo</button><input type="file" id="importFile" accept=".json,application/json" hidden></p>
+      </div>
+      <div class="clock">
+        <svg viewBox="0 0 240 240" aria-hidden="true">
+          <circle class="track" cx="120" cy="120" r="108"/>
+          <circle class="prog" id="prog" cx="120" cy="120" r="108"/>
+        </svg>
+        <div class="sprout" id="sprout" aria-hidden="true"></div>
+        <div class="center">
+          <div class="time" id="time" role="timer">25:00</div>
+          <div class="mood" id="mood">hora de focar</div>
+        </div>
+      </div>
+      <div class="acts-wrap">
+        <span class="acts-label">o que você vai fazer?</span>
+        <div class="acts" id="acts" role="group" aria-label="Atividade"></div>
+      </div>
+      <div class="now" id="now"></div>
+      <button class="chip spinbtn" id="spinBtn" type="button" hidden>🎲 roleta da pausa</button>
+      <div class="controls">
+        <button class="btn" id="reset" type="button" title="Reiniciar (R)" aria-label="Reiniciar">↺</button>
+        <button class="btn primary" id="toggle" type="button">começar</button>
+        <button class="btn" id="skip" type="button" title="Pular (S)" aria-label="Pular">⇥</button>
+      </div>
+      <div class="set" id="set" aria-live="polite"></div>
+    </section>
+
+    <div class="side-col">
+      <section class="glass panel side" id="tasksPanel">
+        <h2>tarefas <small id="taskCount"></small></h2>
+        <form class="add" id="addForm">
+          <input type="text" id="newTask" placeholder="o que vamos fazer?" aria-label="Nova tarefa" autocomplete="off">
+          <button class="btn" type="submit" aria-label="Adicionar tarefa">+</button>
+        </form>
+        <ul class="tasks" id="tasks"></ul>
+      </section>
+
+      <section class="glass panel" id="todayPanel">
+        <h2 class="todayhead"><span>hoje <span class="nowclock" id="nowClock" data-noi18n></span></span> <small id="today"></small></h2>
+        <div class="stats">
+          <div class="stat"><div class="v" id="st-pomos">0</div><div class="k">pomodoros</div></div>
+          <div class="stat"><div class="v" id="st-min">0</div><div class="k">min foco</div></div>
+          <div class="stat"><div class="v" id="st-tasks">0</div><div class="k">tarefas</div></div>
+        </div>
+        <div class="tomatoes" id="tomatoes" aria-hidden="true"></div>
+        <div class="climarow" id="climaRow" hidden></div>
+        <div class="cupsrow" id="cupsRow" hidden><span class="cupslabel">💧 água</span><span class="cups" id="cupsList" aria-hidden="true"></span><span class="cupscount" id="cupsCount"></span></div>
+        <div class="wclocks" id="clockStrip" hidden></div>
+        <div class="cdlist" id="cdList"></div>
+        <button class="chip cdadd" id="cdAdd" type="button">📅 contagem regressiva</button>
+      </section>
+    </div>
+  </div>
+
+  <div class="arrangebar" id="arrangeBar" hidden>
+    <span>🧩 arraste os painéis ou use as setas</span>
+    <button class="chip" id="arrangeReset" type="button">voltar ao padrão</button>
+    <button class="btn primary" id="arrangeDone" type="button">pronto</button>
+  </div>
+
+  <div class="board">
+    <div class="stack">
+      <section class="glass panel" id="missionsPanel">
+        <h2>missões <small>ganhe moedas extras</small></h2>
+        <div class="tabs" role="tablist" aria-label="Missões e metas">
+          <button type="button" role="tab" id="tabMissions" aria-selected="true">🎯 missões</button>
+          <button type="button" role="tab" id="tabGoals" aria-selected="false">🏁 minhas metas</button>
+          <button type="button" role="tab" id="tabLeague" aria-selected="false">🏆 liga</button>
+        </div>
+        <div id="leagueView" hidden>
+          <div class="lgnow"><span class="lgic" id="lgIc" aria-hidden="true"></span><span class="lgtx"><b id="lgName"></b><small id="lgInfo"></small></span></div>
+          <div class="lgbar" aria-hidden="true"><i id="lgBar"></i></div>
+          <small class="lgleft" id="lgLeft"></small>
+          <ol class="lgladder" id="lgLadder"></ol>
+          <p class="musicmsg">toda segunda a semana fecha. bateu a meta da sua liga? sobe e ganha 50 🪙. ficou na mesma liga? +20 🪙. fez menos que o mínimo? cai uma liga. sua liga aparece no ranking para as amizades.</p>
+        </div>
+        <div id="missionsView">
+          <div id="hwBox" class="hwbox" hidden>
+            <h3 class="mhead"><span>🎃 de Halloween</span> <small id="hwLeft"></small></h3>
+            <ul class="missions" id="missionHw"></ul>
+          </div>
+          <h3 class="mhead"><span>de hoje</span> <small id="missionDayLeft"></small></h3>
+          <ul class="missions" id="missionDay"></ul>
+          <h3 class="mhead"><span>da semana</span> <small id="missionWeekLeft"></small></h3>
+          <ul class="missions" id="missionWeek"></ul>
+        </div>
+        <div id="goalsView" hidden>
+          <ul class="missions" id="goalList"></ul>
+          <form class="goalform" id="goalForm">
+            <select id="goalKind" aria-label="Tipo de meta">
+              <option value="min">⏱️ horas de foco</option>
+              <option value="pomos">🍅 pomodoros</option>
+              <option value="days">📅 dias com foco</option>
+              <option value="water">💧 copos de água</option>
+            </select>
+            <input type="number" id="goalTarget" min="1" max="999" step="0.5" value="10" aria-label="Quantidade">
+            <span class="gunit" id="goalUnit">horas</span>
+            <select id="goalPeriod" aria-label="Período">
+              <option value="week">por semana</option>
+              <option value="day">por dia</option>
+            </select>
+            <select id="goalAct" aria-label="Atividade"></select>
+            <button class="btn" type="submit">+ criar meta</button>
+          </form>
+          <p class="musicmsg">cada meta batida vale 25 🪙 (uma vez por dia ou por semana).</p>
+        </div>
+      </section>
+
+      <section class="glass panel diary" id="diaryPanel">
+        <h2>diário <small id="diarySaved"></small></h2>
+        <div class="tabs" role="tablist" aria-label="Diário e notas">
+          <button type="button" role="tab" id="tabDiary" aria-selected="true">📖 diário</button>
+          <button type="button" role="tab" id="tabNotes" aria-selected="false">🗒️ notas</button>
+        </div>
+        <div id="diaryView">
+          <div class="daynav">
+            <button class="vb" id="dPrev" type="button" aria-label="Dia anterior">‹</button>
+            <b id="dDate"></b>
+            <button class="vb" id="dNext" type="button" aria-label="Próximo dia">›</button>
+          </div>
+          <div class="moods" id="moods" role="group" aria-label="Como você está"></div>
+          <textarea id="dText" rows="8" placeholder="como foi seu dia? o que você estudou, aprendeu, sentiu..." aria-label="Texto do diário"></textarea>
+          <h3>dias anteriores</h3>
+          <ul class="dlist" id="dList"></ul>
+        </div>
+        <div id="notesView" hidden>
+          <div class="notes">
+            <div class="nlist">
+              <button class="btn" id="nNew" type="button">+ nova nota</button>
+              <ul id="nList"></ul>
+            </div>
+            <div class="nedit" id="nEdit" hidden>
+              <input type="text" id="nTitle" placeholder="título" maxlength="80" aria-label="Título da nota">
+              <textarea id="nText" rows="11" placeholder="escreva aqui..." aria-label="Texto da nota"></textarea>
+              <p style="margin:0"><button class="linkbtn" id="nDel" type="button">apagar nota</button></p>
+            </div>
+          </div>
+        </div>
+        <p class="musicmsg diary-foot">🔒 só você vê o seu diário e as suas notas.</p>
+      </section>
+
+      <section class="glass panel" id="musicPanel">
+        <h2>música <small>Spotify ou YouTube</small></h2>
+        <div class="presets">
+          <button class="chip" type="button" data-music="https://www.youtube.com/watch?v=rFZHOHl-L8A">📻 rádio lo-fi 24h (YouTube)</button>
+          <button class="chip" type="button" data-music="https://www.youtube.com/watch?v=CwPCy1GLS38">☔ lo-fi de chuva (YouTube)</button>
+          <button class="chip" type="button" data-music="https://www.youtube.com/watch?v=E2vONfzoyRI">🎷 jazz lo-fi (YouTube)</button>
+          <button class="chip" type="button" data-music="https://www.youtube.com/playlist?list=PL0LFA1sXxDmtYEGXuZ3GhXk0uSFbRC55r">💿 playlist (a). (YouTube)</button>
+          <button class="chip" type="button" data-music="https://open.spotify.com/playlist/37i9dQZF1DWWQRwui0ExPn">🎧 lofi beats (Spotify)</button>
+        </div>
+        <form class="link" id="musicForm">
+          <input type="url" id="musicUrl" placeholder="cole aqui o link da playlist ou vídeo" aria-label="Link do Spotify ou YouTube" autocomplete="off">
+          <button class="btn" type="submit">tocar</button>
+        </form>
+        <div class="musicauto">
+          <label class="sw-row" for="musicAuto"><input type="checkbox" id="musicAuto"> <span>🔁 tocar e pausar junto com o pomodoro</span></label>
+          <label class="sw-row" id="musicBreaksRow" for="musicBreaks"><input type="checkbox" id="musicBreaks"> <span>continuar tocando nas pausas</span></label>
+        </div>
+        <p class="musicmsg" id="musicMsg"></p>
+        <div class="player" id="player" hidden></div>
+        <p style="margin:8px 0 0"><button class="linkbtn" id="closeMusic" type="button" hidden>fechar o player</button></p>
+      </section>
+
+      <section class="glass panel" id="colPanel">
+        <h2>coleção <small>suba de nível ou compre com moedas</small></h2>
+        <div class="tabs" role="tablist" aria-label="coleção">
+          <button type="button" role="tab" data-coltab="colThemes" aria-selected="true">🖼 cenários</button>
+          <button type="button" role="tab" data-coltab="colPets" aria-selected="false">🐾 bichinho</button>
+          <button type="button" role="tab" data-coltab="colColors" aria-selected="false">🎨 cores</button>
+          <button type="button" role="tab" data-coltab="colPlants" aria-selected="false">🌱 plantinha</button>
+        </div>
+        <div id="colThemes">
+          <div class="items" id="themes"></div>
+        </div>
+        <div id="colPets" hidden>
+          <div class="items" id="pets"></div>
+          <h3>pintar o bichinho</h3>
+          <div class="petcolors" id="petColors" role="group" aria-label="Cor do bichinho"></div>
+        </div>
+        <div id="colColors" hidden>
+          <div class="colors" id="colors" role="group" aria-label="Tema de cor"></div>
+        </div>
+        <div id="colPlants" hidden>
+          <p class="musicmsg">o que você está plantando? cada pomodoro vira uma plantinha no "hoje", e os nomes dos níveis mudam junto.</p>
+          <div class="plants" id="plants" role="group" aria-label="O que você está plantando"></div>
+        </div>
+      </section>
+
+      <section class="glass panel" id="rankPanel">
+        <h2>ranking dos amigos <small>pomodoros e tarefas dos últimos 7 dias · a ordem é pelos pomodoros</small></h2>
+        <div id="rankOut">
+          <p class="empty">entre na sua conta para salvar seu progresso na nuvem e competir com amigos.</p>
+          <p style="margin:10px 0 0"><button class="btn" type="button" data-open-acct>☁ entrar ou criar conta</button></p>
+        </div>
+        <div id="rankIn" hidden>
+          <form class="add" id="friendForm">
+            <input type="text" id="friendCode" placeholder="código de amigo (ex.: K7Q2MX)" maxlength="6" aria-label="Código de amigo" autocomplete="off" style="text-transform:uppercase">
+            <button class="btn" type="submit">adicionar</button>
+            <button class="btn" type="button" id="rankRefresh" aria-label="Atualizar ranking" title="Atualizar">↻</button>
+          </form>
+          <div id="reqBox" hidden>
+            <h3>pedidos de amizade</h3>
+            <ul class="reqs" id="reqList"></ul>
+          </div>
+          <p class="musicmsg" id="rankEmpty">peça o código de amigo de alguém (fica em ☁ conta) e cole aqui. mande o seu também!</p>
+          <ol class="rank" id="rankList"></ol>
+          <label class="sw-row sharerank" for="shareNowRank"><input type="checkbox" id="shareNowRank"> <span>mostrar às amizades o que estou fazendo agora</span></label>
+          <p class="musicmsg" id="rankMsg"></p>
+          <div id="salaBox" hidden>
+            <h3>📚 sala de estudo <small>até 8 pessoas</small></h3>
+            <div id="salaOut">
+              <form class="duelform" id="salaNew">
+                <input id="salaName" maxlength="30" placeholder="nome da sala (ex.: turma de direito)" aria-label="Nome da sala">
+                <button class="btn" type="submit">criar sala</button>
+              </form>
+              <form class="duelform" id="salaJoin">
+                <input id="salaCode" maxlength="6" placeholder="código da sala" aria-label="Código da sala" autocomplete="off" style="text-transform:uppercase">
+                <button class="btn" type="submit">entrar na sala</button>
+              </form>
+              <p class="musicmsg">numa sala, o cronômetro é um só para todo mundo: quem começar, pausar ou pular, muda para todas. qualquer pessoa com conta entra com o código, mesmo sem ser amizade.</p>
+            </div>
+            <div id="salaIn" hidden>
+              <div class="salahead"><b id="salaTitle" data-noi18n></b><button class="chip" id="salaLeave" type="button">sair</button></div>
+              <button class="chip salacopy" id="salaCopy" type="button"></button>
+              <ul class="duels salamembers" id="salaMembers"></ul>
+            </div>
+            <p class="musicmsg" id="salaMsg"></p>
+          </div>
+          <div id="roomBox" hidden>
+            <h3>👯 focar junto</h3>
+            <form class="duelform" id="roomForm">
+              <select id="roomWho" aria-label="Focar junto com quem"></select>
+              <button class="btn" type="submit">convidar</button>
+            </form>
+            <p class="musicmsg">o cronômetro fica igual para as duas pessoas: quem começar, pausar ou pular, muda para as duas.</p>
+            <ul class="duels" id="roomList"></ul>
+          </div>
+          <div id="duelBox" hidden>
+            <h3>⚔️ desafios</h3>
+            <form class="duelform" id="duelForm">
+              <select id="duelWho" aria-label="Desafiar quem"></select>
+              <select id="duelType" aria-label="Tipo de desafio">
+                <option value="pomos">🍅 mais pomodoros</option>
+                <option value="water">💧 mais copos de água</option>
+                <option value="min">⏱️ mais minutos de foco</option>
+                <option value="tasks">✅ mais tarefas concluídas</option>
+                <option value="custom">✏️ criar o meu desafio</option>
+              </select>
+              <select id="duelDays" aria-label="Duração">
+                <option value="1">1 dia</option>
+                <option value="3">3 dias</option>
+                <option value="7" selected>7 dias</option>
+                <option value="14">14 dias</option>
+              </select>
+              <span class="duelcustom" id="duelCustom" hidden>
+                <select id="duelIcon" aria-label="Ícone do desafio">
+                  <option>📚</option><option>🏃‍♀️</option><option>🧘</option><option>✍️</option><option>🎨</option><option>🎸</option><option>🧹</option><option>🥗</option><option>😴</option><option>📵</option><option>🙏</option><option>⭐</option>
+                </select>
+                <input id="duelName" maxlength="40" placeholder="qual é o desafio? ex.: ler 10 páginas" aria-label="Nome do desafio">
+              </span>
+              <button class="btn" type="submit">desafiar</button>
+            </form>
+            <p class="musicmsg" id="duelHelp">o placar começa do zero quando a outra pessoa aceita. quem fizer mais no período ganha 30 🪙 (empate: 10 🪙 para cada).</p>
+            <p class="musicmsg" id="duelHelpCustom" hidden>no desafio criado por vocês, cada uma marca +1 no desafio toda vez que fizer. vale a palavra de cada uma 🤞</p>
+            <ul class="duels" id="duelList"></ul>
+          </div>
+        </div>
+      </section>
+    </div>
+    <div class="stack">
+      <section class="glass panel" id="soundPanel">
+        <h2>sons <small>misture do seu jeito</small></h2>
+        <div class="themesnd">
+          <span>sons do cenário: <span id="themeSndList"></span></span>
+          <button class="chip" id="themeSndBtn" type="button">▶ tocar</button>
+        </div>
+        <div class="master">
+          <span class="ml">🔊 volume geral</span>
+          <div class="vol">
+            <button type="button" class="vb" id="masterDown" aria-label="Diminuir volume geral">−</button>
+            <input type="range" id="vol-master" min="0" max="1" step="0.01" aria-label="Volume geral">
+            <button type="button" class="vb" id="masterUp" aria-label="Aumentar volume geral">+</button>
+          </div>
+          <span class="mv" id="masterVal">90%</span>
+        </div>
+        <div class="sounds" id="sounds"></div>
+      </section>
+
+      <section class="glass panel" id="metroPanel">
+        <h2>metrônomo <small id="metroName" data-noi18n>Andante</small></h2>
+        <div class="metro">
+          <div class="metro-top">
+            <button type="button" class="vb big" id="bpmDown" aria-label="Mais devagar">−</button>
+            <div class="bpmv"><b id="bpmVal">90</b><small>BPM</small></div>
+            <button type="button" class="vb big" id="bpmUp" aria-label="Mais rápido">+</button>
+          </div>
+          <input type="range" id="bpmRange" min="30" max="240" step="1" aria-label="Andamento (BPM)">
+          <div class="metro-dots" id="metroDots" aria-hidden="true"></div>
+          <div class="metro-row">
+            <label class="sw-row" for="metroBeats"><span>compasso</span>
+              <select id="metroBeats">
+                <option value="1">1/4</option><option value="2">2/4</option><option value="3">3/4</option>
+                <option value="4">4/4</option><option value="5">5/4</option><option value="6">6/8</option>
+              </select>
+            </label>
+            <button type="button" class="chip" id="tapBtn">👆 bater no ritmo</button>
+          </div>
+          <div class="metro-row">
+            <label class="sw-row" for="metroSound"><span>som</span>
+              <select id="metroSound">
+                <option value="relogio">relógio (clássico)</option>
+                <option value="clique">clique</option>
+                <option value="bip">bip digital</option>
+                <option value="madeira">bloco de madeira</option>
+                <option value="clave">clave</option>
+                <option value="cowbell">cowbell</option>
+                <option value="chimbal">chimbal</option>
+                <option value="baqueta">baqueta</option>
+                <option value="pendulo">tique-taque</option>
+                <option value="bateria">bateria</option>
+              </select>
+            </label>
+            <label class="sw-row" for="metroSub"><span>subdivisão</span>
+              <select id="metroSub">
+                <option value="1">nenhuma</option>
+                <option value="2">colcheias (2)</option>
+                <option value="3">tercinas (3)</option>
+                <option value="4">semicolcheias (4)</option>
+              </select>
+            </label>
+          </div>
+          <label class="sw-row" for="metroAccent"><input type="checkbox" id="metroAccent"> <span>acento no 1º tempo</span></label>
+          <div class="master metro-vol">
+            <span class="ml">🔊 volume</span>
+            <div class="vol">
+              <button type="button" class="vb" id="metroVolDown" aria-label="Diminuir volume do metrônomo">−</button>
+              <input type="range" id="metroVol" min="0" max="1" step="0.05" aria-label="Volume do metrônomo">
+              <button type="button" class="vb" id="metroVolUp" aria-label="Aumentar volume do metrônomo">+</button>
+            </div>
+            <span class="mv" id="metroVolVal">70%</span>
+          </div>
+          <button type="button" class="btn primary" id="metroToggle">▶ ligar metrônomo</button>
+        </div>
+      </section>
+      <section class="glass panel" id="progressPanel">
+        <h2>progresso <small id="achCount"></small></h2>
+        <div class="lvlcard">
+          <span class="big" id="pgIc">🌱</span>
+          <div><div class="lv" id="pgLv">nível 1</div><div class="nm" id="pgNm">Sementinha</div></div>
+        </div>
+        <div class="xpbar"><i id="pgBar"></i></div>
+        <div class="xptxt" id="pgXp"></div>
+        <div class="pgmeta"><span id="pgStreak"></span><span id="pgNext"></span></div>
+        <h3>conquistas</h3>
+        <div class="ach" id="ach"></div>
+        <div class="achinfo" id="achInfo">toque numa medalha para ver como conseguir.</div>
+      </section>
+
+      <section class="glass panel" id="shopPanel">
+        <h2>lojinha <small>🪙 <b id="shopCoins" data-noi18n>0</b> moedas</small></h2>
+        <div class="shoptop">
+          <canvas id="shopPreview" width="16" height="16" aria-hidden="true"></canvas>
+          <div>
+            <b id="shopPetName"></b>
+            <p class="musicmsg">cada bichinho tem a sua roupinha. ganhe moedas com pomodoros de 20 min ou mais, tarefas, copos de água, conquistas e níveis.</p>
+          </div>
+        </div>
+        <div class="tabs" id="shopTabs" role="tablist" aria-label="lojinha"></div>
+        <div class="items" id="shopItems"></div>
+      </section>
+    </div>
+  </div>
+
+  <section class="glass panel" id="histPanel">
+    <h2>histórico <button class="chip sumbtn" id="sumBtn" type="button">📸 resumo da semana</button></h2>
+    <div class="totals">
+      <div class="stat"><div class="v" id="hTot">0</div><div class="k">pomodoros no total</div></div>
+      <div class="stat"><div class="v" id="hHours">0 min</div><div class="k">tempo de foco</div></div>
+      <div class="stat"><div class="v" id="hBest">0</div><div class="k">recorde num dia</div></div>
+    </div>
+    <div class="hist">
+      <div>
+        <h3>últimos 7 dias</h3>
+        <div class="week" id="week"></div>
+        <div class="weektot" id="weekTot"></div>
+      </div>
+      <div>
+        <div class="calhead">
+          <b id="calTitle"></b>
+          <div class="calnav">
+            <button class="vb" id="calPrev" type="button" aria-label="Mês anterior">‹</button>
+            <button class="vb" id="calNext" type="button" aria-label="Próximo mês">›</button>
+          </div>
+        </div>
+        <div class="cal" id="cal"></div>
+        <div class="legend">menos <i></i><i class="l1"></i><i class="l2"></i><i class="l3"></i> mais</div>
+      </div>
+      <div>
+        <h3>no que você focou (30 dias)</h3>
+        <div id="actBars"></div>
+      </div>
+    </div>
+  </section>
+
+  <footer class="foot">
+    <p class="hint"><kbd>espaço</kbd> começar/pausar · <kbd>R</kbd> reiniciar · <kbd>S</kbd> pular</p>
+    <p class="hint">🍅 <span>feito com carinho por</span> <b data-noi18n>Maria Paula</b> · <a href="privacidade.html">sobre e privacidade</a> · <button class="linkbtn" type="button" data-open-idea>💡 mandar sugestão</button> · <button class="linkbtn" type="button" id="newsBtn">✨ novidades</button></p>
+  </footer>
+</div>
+
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+<button class="chip zenexit" id="zenExit" type="button">✕ sair do foco total <kbd>Esc</kbd></button>
+<button class="chip zenmusic" id="zenMusic" type="button" hidden>🎵 música</button>
+<div class="zenmenu" id="zenMenu" hidden></div>
+
+<dialog class="acct sumdlg" id="sumDlg" aria-labelledby="sumTitle">
+  <div class="acct-head"><h2 id="sumTitle">resumo da semana</h2><button class="del" id="sumClose" type="button" aria-label="Fechar">×</button></div>
+  <div class="sumnav">
+    <button class="vb" id="sumPrev" type="button" aria-label="Semana anterior">‹</button>
+    <b id="sumWeek"></b>
+    <button class="vb" id="sumNext" type="button" aria-label="Esta semana">›</button>
+  </div>
+  <canvas id="sumCanvas" width="1080" height="1350" aria-label="Imagem com o resumo da semana"></canvas>
+  <div class="acct-actions">
+    <button class="btn primary" id="sumDown" type="button">⬇ baixar imagem</button>
+  </div>
+  <p class="musicmsg">baixe e poste nos stories 📸</p>
+</dialog>
+
+<div class="chest" id="chestPop" hidden role="dialog" aria-modal="true" aria-labelledby="chestTitle">
+  <div class="water-card">
+    <div class="chestbox" id="chestBox" aria-hidden="true">🎁</div>
+    <h2 id="chestTitle">baú diário</h2>
+    <p id="chestSub"></p>
+    <div class="water-btns"><button class="btn primary" id="chestOk" type="button">oba!</button></div>
+  </div>
+</div>
+
+<div class="water" id="waterPop" hidden role="alertdialog" aria-modal="true" aria-labelledby="waterTitle" aria-describedby="waterSub">
+  <div class="water-card">
+    <div class="water-pet"><canvas id="waterPet" width="16" height="16" aria-hidden="true"></canvas><span class="bell" aria-hidden="true">🔔</span><span class="drop" aria-hidden="true">💧</span></div>
+    <h2 id="waterTitle">hora de beber água!</h2>
+    <p id="waterSub"></p>
+    <div class="water-btns">
+      <button class="btn primary" id="waterDone" type="button">💧 bebi!</button>
+      <button class="btn" id="waterLater" type="button">daqui a 5 min</button>
+    </div>
+    <small id="waterCount"></small>
+  </div>
+</div>
+
+<dialog class="acct spindlg" id="spinDlg" aria-labelledby="spinTitle">
+  <div class="acct-head"><h2 id="spinTitle">roleta da pausa</h2><button class="del" id="spinClose" type="button" aria-label="Fechar">×</button></div>
+  <div class="wheelbox">
+    <span class="wpointer" aria-hidden="true">▼</span>
+    <div class="wheel" id="wheel" aria-hidden="true"></div>
+  </div>
+  <div class="acct-actions"><button class="btn primary" id="spinGo" type="button">🎲 girar</button></div>
+  <div class="spinres" id="spinRes" hidden>
+    <b id="spinName"></b>
+    <p id="spinDesc"></p>
+    <div class="breath" id="breath" hidden><div class="bcircle" id="bCircle"></div><span id="bLabel"></span></div>
+    <div class="acct-actions"><button class="btn primary" id="spinDone" type="button">✓ fiz!</button><button class="btn" id="spinAgain" type="button">girar de novo</button></div>
+  </div>
+</dialog>
+
+<dialog class="acct cddlg" id="cdDlg" aria-labelledby="cdTitle">
+  <div class="acct-head"><h2 id="cdTitle">contagem regressiva</h2><button class="del" id="cdClose" type="button" aria-label="Fechar">×</button></div>
+  <p class="acct-lead">uma prova, uma entrega, uma viagem… o "hoje" mostra quantos dias faltam. se quiser, coloque quantas horas de foco você quer fazer até lá.</p>
+  <form class="goalform cdform" id="cdForm">
+    <input type="text" id="cdName" maxlength="30" placeholder="o quê? ex.: prova da OAB" aria-label="Nome" required>
+    <input type="date" id="cdDate" aria-label="Data" required>
+    <input type="number" id="cdGoal" min="1" max="2000" step="1" placeholder="horas (opcional)" aria-label="Meta de horas de foco até lá (opcional)">
+    <button class="btn primary" type="submit">adicionar</button>
+  </form>
+  <ul class="missions cdmine" id="cdMine"></ul>
+</dialog>
+
+<dialog class="acct newsdlg" id="newsDlg" aria-labelledby="newsTitle">
+  <div class="acct-head"><h2 id="newsTitle">novidades ✨</h2><button class="del" id="newsClose" type="button" aria-label="Fechar">×</button></div>
+  <p class="acct-lead">o pomodoro ganhou umas coisinhas novas, muitas pedidas por vocês:</p>
+  <ul class="news">
+    <li><span class="nic" aria-hidden="true">🧩</span><span><b>organize do seu jeito</b><small>com o botão 🧩 organizar, lá em cima, você muda os painéis de lugar: setas no celular, arrastar no computador.</small></span></li>
+    <li><span class="nic" aria-hidden="true">📚</span><span><b>estude em grupo, até 8 pessoas</b><small>no ranking, crie uma sala de estudo e mande o código (ou o convite) para a turma. o cronômetro fica igual para todo mundo.</small></span></li>
+    <li><span class="nic" aria-hidden="true">🏆</span><span><b>ligas semanais</b><small>nas missões, aba 🏆 liga: bronze, prata, ouro, diamante e lendária. bata a meta da semana para subir e ganhar moedas.</small></span></li>
+    <li><span class="nic" aria-hidden="true">📅</span><span><b>contagem regressiva</b><small>no "hoje", conte os dias até a prova (ou a viagem!) e veja quantas horas de foco por dia faltam para chegar preparada.</small></span></li>
+    <li><span class="nic" aria-hidden="true">⚔️</span><span><b>desafios do seu jeito</b><small>agora tem desafio de minutos de foco, de tarefas e um que vocês mesmas criam (ler, correr, meditar…). e o placar começa do zero quando a outra pessoa aceita.</small></span></li>
+    <li><span class="nic" aria-hidden="true">🔔</span><span><b>avisos no celular</b><small>com o "aviso quando o tempo acabar" ligado nos ajustes (⚙), o celular avisa mesmo com o app minimizado.</small></span></li>
+    <li><span class="nic" aria-hidden="true">🎃</span><span><b>o Halloween chegou!</b><small>até 2 de novembro: missões especiais, itens assustadores na lojinha (só em outubro) e uma medalha nova. o cenário "noite de halloween" é grátis na coleção.</small></span></li>
+    <li><span class="nic" aria-hidden="true">👯</span><span><b>focar junto</b><small>no ranking, convide uma amizade para uma sala: o cronômetro fica igual para as duas, e quem começar ou pausar muda para as duas.</small></span></li>
+    <li><span class="nic" aria-hidden="true">🎲</span><span><b>roleta da pausa</b><small>na pausa, gire a roleta e descubra o que fazer: alongar, beber água, respirar 4-7-8… cumpriu? ganha moedinha.</small></span></li>
+    <li><span class="nic" aria-hidden="true">🌦️</span><span><b>clima de verdade</b><small>nos ajustes (⚙), escolha sua cidade: quando chover, nevar ou estiver nublado aí, o cenário fica igual.</small></span></li>
+    <li><span class="nic" aria-hidden="true">🌽</span><span><b>escolha o que plantar</b><small>tomate, milho, lírio, girassol, morango… cada pomodoro vira uma plantinha no "hoje", e os nomes dos níveis mudam junto. <button class="linkbtn" type="button" id="newsPlant">escolher agora</button></small></span></li>
+    <li><span class="nic" aria-hidden="true">🌱</span><span><b>a plantinha cresce no relógio</b><small>durante o foco ela nasce e vai crescendo até ficar pronta. desistiu no meio? ela murcha 🥀</small></span></li>
+    <li><span class="nic" aria-hidden="true">🐾</span><span><b>bichinhos no ranking</b><small>cada amizade aparece com o bichinho dela e um simbolozinho do que está fazendo agora (📚, 🎮, ☕…). quem estiver focando aparece em cima do seu cronômetro, do lado do seu bichinho.</small></span></li>
+    <li><span class="nic" aria-hidden="true">🎵</span><span><b>música no foco total</b><small>agora dá para tocar e pausar a música sem sair do foco total.</small></span></li>
+    <li><span class="nic" aria-hidden="true">💡</span><span><b>caixa de sugestões</b><small>teve uma ideia ou achou um problema? manda pelo botão 💡 sugestões lá em cima, que chega direto para mim.</small></span></li>
+  </ul>
+  <div class="acct-actions"><button class="btn primary" id="newsOk" type="button">oba!</button></div>
+</dialog>
+
+<dialog class="acct ideadlg" id="ideaDlg" aria-labelledby="ideaTitle">
+  <div class="acct-head"><h2 id="ideaTitle">sugestões</h2><button class="del" id="ideaClose" type="button" aria-label="Fechar">×</button></div>
+  <div class="tabs" id="ideaTabs" role="tablist" aria-label="sugestões" hidden>
+    <button type="button" role="tab" id="ideaTabSend" aria-selected="true">✍️ enviar</button>
+    <button type="button" role="tab" id="ideaTabInbox" aria-selected="false">📥 recebidas<span id="ideaInboxN" data-noi18n></span></button>
+  </div>
+  <div id="ideaSend">
+    <p class="acct-lead">teve uma ideia, achou um problema ou quer mandar um carinho? escreve aqui que chega direto para mim 💌</p>
+    <form id="ideaForm" class="acct-form">
+      <select id="ideaKind" aria-label="Tipo de sugestão">
+        <option value="ideia">💡 ideia</option>
+        <option value="problema">🐞 problema</option>
+        <option value="elogio">💖 elogio</option>
+        <option value="outro">💬 outro</option>
+      </select>
+      <textarea id="ideaText" rows="6" maxlength="1000" required placeholder="o que você queria no pomodoro? se for um problema, conta o que aconteceu e em qual aparelho." aria-label="Sua sugestão"></textarea>
+      <small class="ideacount" id="ideaCount" data-noi18n>0/1000</small>
+      <input type="text" id="ideaContact" maxlength="100" autocomplete="off" placeholder="como te respondo? e-mail ou @ (opcional)" aria-label="Contato (opcional)">
+      <input type="text" id="ideaHp" class="hp" tabindex="-1" autocomplete="off" aria-hidden="true">
+      <button class="btn primary" type="submit" id="ideaSubmit">enviar sugestão</button>
+    </form>
+    <p class="acct-msg" id="ideaMsg" role="status"></p>
+    <p class="acct-foot">não precisa de conta. se você tiver entrado na conta, seu apelido vai junto. <a href="privacidade.html" target="_blank" rel="noopener">política de privacidade</a></p>
+  </div>
+  <div id="ideaInbox" hidden>
+    <div class="ideafilters">
+      <button class="chip" type="button" data-ideafilter="new" aria-pressed="true">novas</button>
+      <button class="chip" type="button" data-ideafilter="all" aria-pressed="false">todas</button>
+    </div>
+    <ul class="ideas" id="ideaList"></ul>
+  </div>
+</dialog>
+
+<dialog class="acct" id="acctDlg" aria-labelledby="acctTitle">
+  <div class="acct-head"><h2 id="acctTitle">sua conta</h2><button class="del" id="acctClose" type="button" aria-label="Fechar">×</button></div>
+
+  <div id="acctOff" hidden>
+    <p class="acct-lead" id="acctOffMsg">as contas ainda estão sendo ativadas neste site. enquanto isso, seu progresso fica salvo neste navegador.</p>
+  </div>
+
+  <div id="acctOut">
+    <p class="acct-lead">entre para salvar seu progresso na nuvem, usar no celular e no computador, e competir com amigos.</p>
+    <label class="sw-row consent" for="consent"><input type="checkbox" id="consent"> <span>li e aceito a <a href="privacidade.html" target="_blank" rel="noopener">política de privacidade</a></span></label>
+    <button class="btn google" id="googleBtn" type="button"><span aria-hidden="true">G</span> entrar com Google</button>
+    <div class="or"><span>ou com e-mail</span></div>
+    <form id="emailForm" class="acct-form">
+      <input type="text" id="nickIn" placeholder="apelido (aparece no ranking)" maxlength="24" autocomplete="nickname" hidden aria-label="Apelido">
+      <input type="email" id="emailIn" placeholder="e-mail" required autocomplete="email" aria-label="E-mail">
+      <input type="password" id="passIn" placeholder="senha (mínimo 6 caracteres)" required minlength="6" autocomplete="current-password" aria-label="Senha">
+      <button class="btn primary" type="submit" id="emailSubmit">entrar</button>
+    </form>
+    <div class="acct-links">
+      <button class="linkbtn" id="modeSwitch" type="button">não tenho conta, quero criar</button>
+      <button class="linkbtn" id="forgotBtn" type="button">esqueci a senha</button>
+    </div>
+    <p class="acct-msg" id="acctMsg" role="status"></p>
+  </div>
+
+  <div id="acctIn" hidden>
+    <p class="acct-lead">conectado como <b id="acctEmail" data-noi18n></b></p>
+    <div class="acct-form">
+      <label for="nickEdit" class="lbl">apelido</label>
+      <input type="text" id="nickEdit" maxlength="24" autocomplete="nickname">
+      <label class="sw-row" for="publicIn"><input type="checkbox" id="publicIn"> <span>aparecer no ranking dos amigos</span></label>
+      <label class="sw-row" for="shareNowIn"><input type="checkbox" id="shareNowIn"> <span>mostrar às amizades o que estou fazendo agora (ex.: 📚 estudando · 12 min)</span></label>
+      <div class="code-row">seu código de amigo: <b id="myCode" data-noi18n></b> <button class="chip" id="copyCode" type="button">copiar</button></div>
+      <div class="sync" id="syncStatus"></div>
+    </div>
+    <div class="acct-actions">
+      <button class="btn" id="exportBtn" type="button">⬇ baixar meus dados</button>
+      <button class="btn" id="logoutBtn" type="button">sair da conta</button>
+    </div>
+    <details class="danger">
+      <summary>excluir minha conta</summary>
+      <p>isso apaga para sempre sua conta e todos os seus dados da nuvem: progresso, histórico, tarefas e amigos. não dá para desfazer.</p>
+      <label class="sw-row" for="delLocal"><input type="checkbox" id="delLocal" checked> <span>apagar também os dados deste navegador</span></label>
+      <input type="text" id="delConfirm" placeholder="digite EXCLUIR para confirmar" aria-label="Digite EXCLUIR para confirmar" autocomplete="off">
+      <button class="btn danger-btn" id="deleteBtn" type="button">excluir para sempre</button>
+    </details>
+    <p class="acct-msg" id="acctMsg2" role="status"></p>
+  </div>
+  <p class="acct-foot"><a href="privacidade.html" target="_blank" rel="noopener">política de privacidade</a></p>
+</dialog>
+
+<script src="js/i18n.js"></script>
+<script src="js/scenes.js"></script>
+<script src="js/pets.js"></script>
+<script src="js/sounds.js"></script>
+<script src="js/app.js"></script>
+<script src="js/clima.js"></script>
+<script src="js/mudanca.js"></script>
+<script type="module" src="js/cloud.js"></script>
+<script type="module" src="js/sugestoes.js"></script>
+</body>
+</html>

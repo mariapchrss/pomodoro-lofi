@@ -1,0 +1,168 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // dona do site (vê as sugestões). Se mudar, mude também em pomodoro/js/sugestoes-config.js
+    function isAdmin() {
+      return request.auth != null && request.auth.token.email_verified == true
+        && request.auth.token.email in ['maariapcardoso@gmail.com'];
+    }
+
+    // caixa de sugestões: qualquer pessoa manda (mesmo sem conta), só a dona lê, marca como lida e apaga
+    match /suggestions/{sid} {
+      allow create: if request.resource.data.keys().hasOnly(['text', 'kind', 'contact', 'nick', 'uid', 'lang', 'createdAt', 'read'])
+        && request.resource.data.text is string && request.resource.data.text.size() >= 3 && request.resource.data.text.size() <= 1000
+        && request.resource.data.kind in ['ideia', 'problema', 'elogio', 'outro']
+        && request.resource.data.contact is string && request.resource.data.contact.size() <= 100
+        && request.resource.data.nick is string && request.resource.data.nick.size() <= 30
+        && request.resource.data.uid == (request.auth != null ? request.auth.uid : '')
+        && request.resource.data.lang is string && request.resource.data.lang.size() <= 5
+        && request.resource.data.createdAt is number
+        && request.resource.data.read == false;
+      allow read, delete: if isAdmin();
+      allow update: if isAdmin() && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['read']);
+    }
+
+    // dados completos de cada pessoa: só ela lê e escreve
+    match /users/{uid} {
+      allow read, write: if request.auth != null && request.auth.uid == uid;
+    }
+
+    // perfil do ranking: quem tem conta pode ler (para achar pelo código);
+    // só a própria pessoa cria, altera ou apaga, e só com estes campos
+    match /profiles/{uid} {
+      allow read: if request.auth != null;
+      allow delete: if request.auth != null && request.auth.uid == uid;
+      allow create, update: if request.auth != null && request.auth.uid == uid
+        && request.resource.data.keys().hasOnly(['nick', 'code', 'xp', 'level', 'levelName', 'levelIc', 'weekPomos', 'streak', 'pet', 'updatedAt', 'days', 'lastDay', 'water', 'now', 'petColor', 'petOutfit', 'plant', 'league', 'tasks'])
+        && (!('tasks' in request.resource.data) || (request.resource.data.tasks is map && request.resource.data.tasks.size() <= 8))
+        && (!('league' in request.resource.data) || (request.resource.data.league is int && request.resource.data.league >= 0 && request.resource.data.league <= 4))
+        && (!('petOutfit' in request.resource.data) || (request.resource.data.petOutfit is map && request.resource.data.petOutfit.size() <= 4))
+        && request.resource.data.nick is string && request.resource.data.nick.size() <= 30
+        && request.resource.data.code is string && request.resource.data.code.size() == 6;
+    }
+
+    // amizades dos dois lados: o id é "uidA_uidB" (em ordem alfabética).
+    // só as duas pessoas leem; quem pede cria como "pending"; só a outra pessoa aceita; qualquer uma das duas desfaz
+    match /friendships/{pid} {
+      allow get: if request.auth != null && (resource == null || request.auth.uid in resource.data.members);
+      allow list: if request.auth != null && request.auth.uid in resource.data.members;
+      allow create: if request.auth != null
+        && request.resource.data.keys().hasOnly(['members', 'from', 'fromNick', 'status', 'createdAt'])
+        && request.resource.data.members.size() == 2
+        && request.resource.data.members[0] < request.resource.data.members[1]
+        && pid == request.resource.data.members[0] + '_' + request.resource.data.members[1]
+        && request.auth.uid in request.resource.data.members
+        && request.resource.data.from == request.auth.uid
+        && request.resource.data.status == 'pending'
+        && request.resource.data.fromNick is string && request.resource.data.fromNick.size() <= 30;
+      allow update: if request.auth != null
+        && request.auth.uid in resource.data.members
+        && request.auth.uid != resource.data.from
+        && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['status'])
+        && request.resource.data.status == 'accepted';
+      allow delete: if request.auth != null && request.auth.uid in resource.data.members;
+    }
+
+    // focar junto: sala de duas amizades com o cronômetro em comum. só as duas leem;
+    // quem convida cria "pending"; só a outra pessoa aceita ("active"); as duas mudam o cronômetro; qualquer uma apaga
+    match /rooms/{rid} {
+      allow get: if request.auth != null && (resource == null || request.auth.uid in resource.data.members);
+      allow list: if request.auth != null && request.auth.uid in resource.data.members;
+      allow create: if request.auth != null
+        && request.resource.data.keys().hasOnly(['members', 'host', 'hostNick', 'guestNick', 'status', 'timer', 'createdAt'])
+        && request.resource.data.members.size() == 2
+        && request.resource.data.members[0] < request.resource.data.members[1]
+        && request.auth.uid in request.resource.data.members
+        && request.resource.data.host == request.auth.uid
+        && request.resource.data.status == 'pending'
+        && request.resource.data.timer is map
+        && request.resource.data.hostNick is string && request.resource.data.hostNick.size() <= 30
+        && request.resource.data.guestNick is string && request.resource.data.guestNick.size() <= 30
+        && get(/databases/$(database)/documents/friendships/$(request.resource.data.members[0] + '_' + request.resource.data.members[1])).data.status == 'accepted';
+      allow update: if request.auth != null
+        && request.auth.uid in resource.data.members
+        && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['status', 'timer'])
+        && request.resource.data.status in ['pending', 'active']
+        && (request.resource.data.status == resource.data.status || request.auth.uid != resource.data.host)
+        && request.resource.data.timer is map;
+      allow delete: if request.auth != null && request.auth.uid in resource.data.members;
+    }
+
+    // sala de estudo em grupo (02/10/2026): o id é o código de 6 letras; até 8 pessoas; qualquer pessoa com conta entra com o código.
+    // Entrar = só se acrescentar. Quem está dentro mexe no cronômetro, na própria presença (seen) e sai tirando só a si.
+    // Se quem cuida da sala (host) sair, passa para outra pessoa da sala. A última a sair apaga.
+    match /salas/{sid} {
+      allow get: if request.auth != null;
+      allow list: if request.auth != null && request.auth.uid in resource.data.members;
+      allow create: if request.auth != null
+        && sid == request.resource.data.code
+        && sid.matches('^[A-Z2-9]{6}$')
+        && request.resource.data.keys().hasOnly(['code', 'name', 'host', 'members', 'nicks', 'seen', 'timer', 'createdAt'])
+        && request.resource.data.host == request.auth.uid
+        && request.resource.data.members == [request.auth.uid]
+        && request.resource.data.name is string && request.resource.data.name.size() > 0 && request.resource.data.name.size() <= 30
+        && request.resource.data.nicks is map && request.resource.data.nicks.keys().hasOnly([request.auth.uid])
+        && request.resource.data.seen is map && request.resource.data.seen.keys().hasOnly([request.auth.uid])
+        && request.resource.data.timer is map;
+      allow update: if request.auth != null
+        && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['members', 'nicks', 'seen', 'timer', 'host'])
+        && request.resource.data.members.size() <= 8
+        && request.resource.data.timer is map
+        && request.resource.data.nicks.diff(resource.data.nicks).affectedKeys().hasOnly([request.auth.uid])
+        && request.resource.data.seen.diff(resource.data.seen).affectedKeys().hasOnly([request.auth.uid])
+        && (
+          (!(request.auth.uid in resource.data.members)
+            && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['members', 'nicks', 'seen'])
+            && request.resource.data.members.toSet() == resource.data.members.toSet().union([request.auth.uid].toSet())
+            && request.resource.data.nicks[request.auth.uid] is string && request.resource.data.nicks[request.auth.uid].size() <= 30)
+          || (request.auth.uid in resource.data.members
+            && (request.resource.data.host == resource.data.host
+                || (resource.data.host == request.auth.uid && request.resource.data.host in request.resource.data.members))
+            && (request.resource.data.members == resource.data.members
+                || request.resource.data.members.toSet() == resource.data.members.toSet().difference([request.auth.uid].toSet())))
+        );
+      allow delete: if request.auth != null && request.auth.uid in resource.data.members && resource.data.members.size() <= 1;
+    }
+
+    // desafios entre duas amizades: só as duas pessoas leem;
+    // quem desafia cria como "pending"; só a outra pessoa aceita; qualquer uma das duas apaga.
+    // Desde 02/10/2026 (v: 2) o placar fica em score.<uid>, começa do 0 no aceite e cada pessoa só mexe no próprio número.
+    // type 'custom' = desafio criado pela pessoa (name + ic), marcado com +1
+    match /challenges/{cid} {
+      allow get: if request.auth != null && (resource == null || request.auth.uid in resource.data.members);
+      allow list: if request.auth != null && request.auth.uid in resource.data.members;
+      allow create: if request.auth != null
+        && request.resource.data.keys().hasOnly(['members', 'from', 'fromNick', 'toNick', 'type', 'days', 'status', 'createdAt', 'v', 'name', 'ic'])
+        && request.resource.data.members.size() == 2
+        && request.resource.data.members[0] < request.resource.data.members[1]
+        && request.auth.uid in request.resource.data.members
+        && request.resource.data.from == request.auth.uid
+        && request.resource.data.status == 'pending'
+        && request.resource.data.type in ['pomos', 'water', 'min', 'tasks', 'custom']
+        && request.resource.data.days in [1, 3, 7, 14]
+        && (request.resource.data.type != 'custom'
+            || (request.resource.data.name is string && request.resource.data.name.size() > 0 && request.resource.data.name.size() <= 40
+                && request.resource.data.ic is string && request.resource.data.ic.size() <= 12))
+        && request.resource.data.fromNick is string && request.resource.data.fromNick.size() <= 30
+        && request.resource.data.toNick is string && request.resource.data.toNick.size() <= 30
+        && get(/databases/$(database)/documents/friendships/$(request.resource.data.members[0] + '_' + request.resource.data.members[1])).data.status == 'accepted';
+      allow update: if request.auth != null
+        && request.auth.uid in resource.data.members
+        && (
+          (request.auth.uid != resource.data.from
+            && resource.data.status == 'pending'
+            && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['status', 'start', 'startAt'])
+            && request.resource.data.status == 'active')
+          || (resource.data.status == 'active'
+            && resource.data.get('v', 1) == 2
+            && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['score'])
+            && request.resource.data.score.diff(resource.data.get('score', {})).affectedKeys().hasOnly([request.auth.uid])
+            && request.resource.data.score[request.auth.uid] is int
+            && request.resource.data.score[request.auth.uid] >= 0
+            && request.time.toMillis() < resource.data.startAt + (resource.data.days + 1) * 86400000)
+        );
+      allow delete: if request.auth != null && request.auth.uid in resource.data.members;
+    }
+  }
+}
