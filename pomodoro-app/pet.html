@@ -1,0 +1,40 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; img-src data:; style-src 'unsafe-inline'; script-src 'unsafe-inline'">
+<title>Pomodoro Lo-fi</title>
+<style>
+  /* janelinha transparente: só o bichinho, o tempo e dois botõezinhos. Arrasta pelo bichinho ou pelo tempo */
+  html, body { margin: 0; height: 100%; background: transparent; overflow: hidden; user-select: none; }
+  body { display: flex; flex-direction: column; align-items: center; justify-content: flex-end; gap: 5px; padding-bottom: 6px; box-sizing: border-box; font-family: "Segoe UI", system-ui, sans-serif; --cor: #F4B86A; }
+  body[data-mode="short"], body[data-mode="long"] { --cor: #9AD3B0; }
+  #arrasta { -webkit-app-region: drag; display: flex; flex-direction: column; align-items: center; gap: 5px; cursor: grab; }
+  #pet { width: 104px; height: 104px; image-rendering: pixelated; filter: drop-shadow(0 4px 6px rgba(0, 0, 0, .5)); }
+  #time { font-weight: 800; font-size: 27px; line-height: 1; font-variant-numeric: tabular-nums; color: #F4EFE6; background: rgba(21, 19, 31, .9); border: 2px solid var(--cor); border-radius: 999px; padding: 5px 16px 6px; }
+  #botoes { display: flex; gap: 6px; }
+  button { width: 30px; height: 26px; border-radius: 999px; border: 1px solid rgba(255, 255, 255, .25); background: rgba(21, 19, 31, .85); color: #F4EFE6; font: 700 13px "Segoe UI", sans-serif; cursor: pointer; padding: 0; }
+  button:hover { border-color: var(--cor); color: var(--cor); }
+</style>
+</head>
+<body data-mode="focus">
+  <div id="arrasta">
+    <img id="pet" alt="" draggable="false">
+    <div id="time">--:--</div>
+  </div>
+  <div id="botoes">
+    <button id="tg" type="button" title="começar ou pausar">⏯</button>
+    <button id="bk" type="button" title="voltar para a janela grande">⤢</button>
+  </div>
+<script>
+  const $ = id => document.getElementById(id);
+  bichinho.aoReceber(d => {
+    $('time').textContent = d.t;
+    if (d.img && $('pet').src !== d.img) $('pet').src = d.img;
+    document.body.dataset.mode = d.mode;
+  });
+  $('tg').onclick = () => bichinho.comecarOuPausar();
+  $('bk').onclick = () => bichinho.voltar();
+</script>
+</body>
+</html>

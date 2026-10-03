@@ -1,6 +1,6 @@
 {
   "name": "pomodoro-lofi",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Pomodoro Lo-fi para computador",
   "author": "Maria Paula",
   "main": "main.js",
@@ -15,11 +15,13 @@
     "files": [
       "main.js",
       "preload.js",
+      "pet-preload.js",
+      "pet.html",
       "offline.html",
       "icon.png"
     ],
     "directories": {
-      "output": "saida"
+      "output": "${env.LOCALAPPDATA}/pomodoro-lofi-saida"
     },
     "win": {
       "target": "nsis",
@@ -31,11 +33,15 @@
       "createDesktopShortcut": true,
       "createStartMenuShortcut": true,
       "shortcutName": "Pomodoro Lo-fi",
-      "artifactName": "Instalar Pomodoro Lo-fi.exe"
-    }
+      "artifactName": "Instalar-Pomodoro-Lo-fi.exe"
+    },
+    "publish": [{ "provider": "github", "owner": "mariapchrss", "repo": "pomodoro-lofi" }]
   },
   "devDependencies": {
     "electron": "^44.5.1",
     "electron-builder": "^26.15.3"
+  },
+  "dependencies": {
+    "electron-updater": "^6.8.9"
   }
 }
