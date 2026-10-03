@@ -620,6 +620,13 @@ body.arrange{padding-bottom:90px}
 .mbar{display:block;height:6px;border-radius:99px;background:var(--line);overflow:hidden}
 .mbar i{display:block;height:100%;background:var(--accent);border-radius:99px;transition:width .4s}
 .mission.done{border-color:var(--accent)}
+/* página de login do programa do computador (?app-login): cobre o site inteiro */
+.applogin{position:fixed;inset:0;z-index:200;display:grid;place-items:center;padding:20px;background:var(--night)}
+.applogin-card{max-width:400px;text-align:center;padding:28px;border:1px solid var(--line);border-radius:24px;background:var(--glass2)}
+.applogin-ic{font-size:54px;line-height:1}
+.applogin-card h2{font:400 30px/1.1 var(--pixel);margin:12px 0 8px}
+.applogin-card p{color:var(--muted);font-size:14px;margin:0 0 18px}
+.applogin-card p.err{color:var(--rose)}
 /* contagem regressiva (no "hoje" e na janelinha) */
 .cdlist{display:flex;flex-direction:column;gap:6px;margin-top:12px}
 .cdlist:empty{display:none}

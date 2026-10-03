@@ -37,6 +37,32 @@ async function start() {
   window.CloudFB = {A, F, auth, db};   // a caixa de sugestões (sugestoes.js) usa a mesma conexão
   document.dispatchEvent(new Event('cloudfb'));
 
+  /* ---------- login do programa do computador (?app-login=CÓDIGO, aberto pelo programa no navegador) ----------
+     A pessoa entra com o Google aqui, numa conexão separada (não mexe na conta que já está aberta neste navegador),
+     e a página devolve o login para o programa pelo endereço pomodoro-lofi://. O CÓDIGO volta junto: o programa só
+     aceita se for o que ele mesmo criou (assim outra página não consegue empurrar uma conta para dentro dele) */
+  const appState = new URLSearchParams(location.search).get('app-login');
+  if (appState && /^[a-f0-9]{16,64}$/.test(appState)) {
+    const box = document.createElement('div'); box.className = 'applogin';
+    box.innerHTML = `<div class="applogin-card"><div class="applogin-ic">🍅</div><h2>${T('entrar no programa do computador')}</h2>
+      <p id="appLoginMsg">${T('clique no botão para entrar com o Google. depois o login volta sozinho para o programa.')}</p>
+      <button class="btn primary" id="appLoginBtn" type="button">${T('entrar com o Google')}</button></div>`;
+    document.body.appendChild(box);
+    const say = (t, err) => { const el = $('appLoginMsg'); el.textContent = t; el.classList.toggle('err', !!err); };
+    $('appLoginBtn').onclick = async () => {
+      try {
+        const auth2 = A.getAuth(initializeApp(cfg, 'applogin-' + Date.now()));
+        const res = await A.signInWithPopup(auth2, new A.GoogleAuthProvider());
+        const cred = A.GoogleAuthProvider.credentialFromResult(res);
+        await A.signOut(auth2).catch(() => {});
+        if (!cred || !cred.idToken) throw new Error('sem credencial');
+        $('appLoginBtn').hidden = true;
+        say(T('pronto! o navegador vai perguntar se pode abrir o Pomodoro Lo-fi: clique em abrir. depois pode fechar esta aba.'));
+        location.href = 'pomodoro-lofi://login?state=' + appState + '&id=' + encodeURIComponent(cred.idToken) + '&at=' + encodeURIComponent(cred.accessToken || '');
+      } catch (e) { console.error(e); say(errText(e), true); }
+    };
+  }
+
   let user = null, profile = {nick:'', code:'', public:true}, friends = [], consentAt = null, timer = null, busy = false, creating = false;
   let links = [], unsubLinks = null, seenReq = null;
 
@@ -77,8 +103,11 @@ async function start() {
   $('modeSwitch').onclick = () => setMode(!creating);
   $('googleBtn').onclick = async () => {
     if (!needConsent()) return;
-    msg('acctMsg', 'abrindo o Google…');
     consentAt = consentAt || Date.now();
+    /* no programa do computador o Google não aceita login dentro da janela: o programa abre o navegador de verdade,
+       a pessoa entra lá (?app-login) e o login volta para o programa sozinho (pomodoro-app/main.js) */
+    if (window.pomoDesk && window.pomoDesk.google) { window.pomoDesk.google(); msg('acctMsg', 'abri o seu navegador: entre com o Google lá e depois volte para cá.'); return; }
+    msg('acctMsg', 'abrindo o Google…');
     try { await A.signInWithPopup(auth, new A.GoogleAuthProvider()); } catch (e) { msg('acctMsg', errText(e), true); }
   };
   $('emailForm').onsubmit = async e => {

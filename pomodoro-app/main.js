@@ -91,6 +91,34 @@ ipcMain.on('pet-data', (e, d) => { if (daJanela(e) && pet) pet.webContents.send(
 ipcMain.on('pet-toggle', e => { if (doBichinho(e) && win) win.webContents.send('do-toggle'); });
 ipcMain.on('pet-back', e => { if (doBichinho(e)) fixar(false); });
 
+/* ---------- entrar com o Google pelo navegador de verdade ----------
+   O Google recusa login dentro de janela de programa ("este navegador ou app pode não ser seguro"). Então:
+   1. o site (cloud.js) chama pomoDesk.google() → aqui cria um código e abre o navegador em ?app-login=CÓDIGO;
+   2. a pessoa entra com o Google lá; a página chama pomodoro-lofi://login?state=CÓDIGO&id=...;
+   3. o Windows entrega esse endereço ao programa (second-instance); se o código bater, o site daqui entra com a credencial.
+   O código vale uma vez e por 10 minutos */
+const ESQUEMA = 'pomodoro-lofi';
+let loginState = null, loginAte = 0;
+ipcMain.on('google-login', e => {
+  if (!daJanela(e)) return;
+  loginState = require('crypto').randomBytes(16).toString('hex'); loginAte = Date.now() + 10 * 60000;
+  shell.openExternal(SITE + '?app-login=' + loginState);
+});
+function linkDoNavegador(endereco) {
+  let u; try { u = new URL(endereco); } catch (e) { return; }
+  if (u.protocol !== ESQUEMA + ':' || !win) return;
+  const id = u.searchParams.get('id'), at = u.searchParams.get('at') || '', st = u.searchParams.get('state');
+  if (!id || !loginState || st !== loginState || Date.now() > loginAte) return;
+  loginState = null;
+  if (win.isMinimized()) win.restore();
+  win.show(); win.focus();
+  win.webContents.executeJavaScript(`(async () => {
+    const fb = window.CloudFB; if (!fb) return 'sem conta';
+    await fb.A.signInWithCredential(fb.auth, fb.A.GoogleAuthProvider.credential(${JSON.stringify(id)}, ${JSON.stringify(at)} || null));
+    return 'ok';
+  })()`).catch(() => {});
+}
+
 /* teste rápido (npx electron . --teste): abre, tira uma foto da janela e outra do bichinho fixado em teste/, e fecha */
 async function teste() {
   const dir = path.join(__dirname, 'teste'), espera = ms => new Promise(r => setTimeout(r, ms));
@@ -130,8 +158,17 @@ if (TESTE) app.setPath('userData', path.join(app.getPath('temp'), 'pomodoro-lofi
 /* só uma janela do programa por vez: abrir de novo traz a que já existe */
 if (!app.requestSingleInstanceLock()) app.quit();
 else {
-  app.on('second-instance', () => { if (win) { if (win.isMinimized()) win.restore(); win.focus(); } });
+  app.on('second-instance', (e, argv) => {
+    const link = argv.find(a => a.startsWith(ESQUEMA + '://'));
+    if (link) { linkDoNavegador(link); return; }
+    if (win) { if (win.isMinimized()) win.restore(); win.focus(); }
+  });
   app.whenReady().then(() => {
+    /* avisa o Windows que endereços pomodoro-lofi:// abrem este programa (é assim que o login volta do navegador) */
+    if (!TESTE) {
+      if (app.isPackaged) app.setAsDefaultProtocolClient(ESQUEMA);
+      else app.setAsDefaultProtocolClient(ESQUEMA, process.execPath, [path.resolve(process.argv[1])]);
+    }
     /* o site pode avisar (fim do tempo, água), ficar em tela cheia e copiar o convite; o resto é negado */
     const OK = ['notifications', 'fullscreen', 'clipboard-sanitized-write'];
     session.defaultSession.setPermissionRequestHandler((wc, perm, cb) => cb(OK.includes(perm) && DENTRO.includes(host(wc.getURL()))));

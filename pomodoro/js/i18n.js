@@ -507,6 +507,13 @@ window.I18N = (() => {
     'tarefas concluídas nos últimos 7 dias (só para mostrar, não conta no ranking)':['tasks done in the last 7 days (just for show, doesn\'t count in the ranking)','tareas hechas en los últimos 7 días (solo para mostrar, no cuenta en el ranking)'],
     'pomodoros e tarefas dos últimos 7 dias · a ordem é pelos pomodoros':['pomodoros and tasks from the last 7 days · ordered by pomodoros','pomodoros y tareas de los últimos 7 días · el orden es por pomodoros'],
 
+    /* login do programa do computador */
+    'abri o seu navegador: entre com o Google lá e depois volte para cá.':['I opened your browser: sign in with Google there and then come back here.','abrí tu navegador: entra con Google allí y luego vuelve aquí.'],
+    'entrar no programa do computador':['sign in to the desktop app','entrar en el programa de la computadora'],
+    'clique no botão para entrar com o Google. depois o login volta sozinho para o programa.':['click the button to sign in with Google. then the login goes back to the app by itself.','haz clic en el botón para entrar con Google. después el inicio de sesión vuelve solo al programa.'],
+    'entrar com o Google':['sign in with Google','entrar con Google'],
+    'pronto! o navegador vai perguntar se pode abrir o Pomodoro Lo-fi: clique em abrir. depois pode fechar esta aba.':['done! your browser will ask if it can open Pomodoro Lo-fi: click open. then you can close this tab.','¡listo! el navegador va a preguntar si puede abrir Pomodoro Lo-fi: haz clic en abrir. después puedes cerrar esta pestaña.'],
+
     /* organizar painéis */
     'organizar':['arrange','organizar'], 'mude os painéis de lugar do seu jeito':['move the panels around your way','mueve los paneles a tu manera'],
     'arraste os painéis ou use as setas':['drag the panels or use the arrows','arrastra los paneles o usa las flechas'], 'voltar ao padrão':['back to default','volver al orden original'],

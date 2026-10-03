@@ -2,7 +2,11 @@
    - a faixa invisível no topo para arrastar a janela (ela não tem barra de título);
    - o botão "📌 fixar na tela": some a janela grande e fica só o bichinho com o tempo, flutuando por cima de tudo.
      Enquanto está fixado, este arquivo manda o desenho do bichinho e o tempo para a janelinha (pet.html) */
-const { ipcRenderer } = require('electron');
+const { ipcRenderer, contextBridge } = require('electron');
+
+/* "Entrar com o Google": o site chama isto (cloud.js) e o programa abre o navegador de verdade,
+   porque o Google não aceita login dentro da janela de um programa */
+contextBridge.exposeInMainWorld('pomoDesk', { google: () => ipcRenderer.send('google-login') });
 
 let fixado = false, envio = null, ultimo = '';
 const noSite = () => /pomodoro-lofi\.(web\.app|firebaseapp\.com)$/.test(location.hostname);
