@@ -15,9 +15,21 @@
   #botoes { display: flex; gap: 6px; }
   button { width: 30px; height: 26px; border-radius: 999px; border: 1px solid rgba(255, 255, 255, .25); background: rgba(21, 19, 31, .85); color: #F4EFE6; font: 700 13px "Segoe UI", sans-serif; cursor: pointer; padding: 0; }
   button:hover { border-color: var(--cor); color: var(--cor); }
+  /* balão do lembrete de água: aparece em cima do bichinho e ele dá uns pulinhos para chamar atenção */
+  #agua { display: flex; flex-direction: column; align-items: center; gap: 6px; width: 134px; box-sizing: border-box; padding: 8px 6px; margin-bottom: 2px; border-radius: 14px; background: rgba(21, 19, 31, .94); border: 2px solid #8CC8F4; color: #F4EFE6; font-size: 12px; font-weight: 700; text-align: center; line-height: 1.2; }
+  #agua[hidden] { display: none; }
+  #agua div { display: flex; gap: 5px; }
+  #agua button { width: auto; height: 24px; padding: 0 9px; font-size: 11.5px; }
+  #agua #wy { background: #8CC8F4; color: #15131F; border-color: #8CC8F4; }
+  body.agua #pet { animation: pulo .55s ease-in-out infinite alternate; }
+  @keyframes pulo { from { transform: translateY(0); } to { transform: translateY(-7px); } }
 </style>
 </head>
 <body data-mode="focus">
+  <div id="agua" hidden>
+    <span>💧 hora de beber água!</span>
+    <div><button id="wy" type="button">bebi!</button><button id="wl" type="button">depois</button></div>
+  </div>
   <div id="arrasta">
     <img id="pet" alt="" draggable="false">
     <div id="time">--:--</div>
@@ -32,7 +44,10 @@
     $('time').textContent = d.t;
     if (d.img && $('pet').src !== d.img) $('pet').src = d.img;
     document.body.dataset.mode = d.mode;
+    $('agua').hidden = !d.agua; document.body.classList.toggle('agua', !!d.agua);
   });
+  $('wy').onclick = () => bichinho.agua(true);
+  $('wl').onclick = () => bichinho.agua(false);
   $('tg').onclick = () => bichinho.comecarOuPausar();
   $('bk').onclick = () => bichinho.voltar();
 </script>

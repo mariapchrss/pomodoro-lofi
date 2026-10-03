@@ -14,7 +14,9 @@ function mandar() {
   const cv = document.getElementById('petCanvas'), t = document.getElementById('time');
   if (!cv || !t) return;
   let img = ''; try { img = cv.toDataURL('image/png'); } catch (e) {}
-  const d = { t: t.textContent, img, mode: document.body.dataset.mode || 'focus' }, chave = d.t + d.mode + img;
+  /* lembrete de água aberto no site (#waterPop) = o bichinho do canto mostra o balão de água */
+  const wp = document.getElementById('waterPop');
+  const d = { t: t.textContent, img, mode: document.body.dataset.mode || 'focus', agua: !!(wp && !wp.hidden) }, chave = d.t + d.mode + d.agua + img;
   if (chave !== ultimo) { ultimo = chave; ipcRenderer.send('pet-data', d); }
 }
 function estado(on) {
@@ -44,4 +46,6 @@ function montar() {
 ipcRenderer.on('mini-state', (e, on) => estado(on));
 /* ⏯ na janelinha do bichinho = clicar no botão começar/pausar do site */
 ipcRenderer.on('do-toggle', () => { const b = document.getElementById('toggle'); if (b) b.click(); });
+/* "bebi!" e "depois" no balão de água do bichinho = os botões do lembrete do site */
+ipcRenderer.on('do-water', (e, bebi) => { const b = document.getElementById(bebi ? 'waterDone' : 'waterLater'); if (b) b.click(); });
 window.addEventListener('DOMContentLoaded', montar);

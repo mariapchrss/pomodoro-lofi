@@ -4,5 +4,6 @@ const { contextBridge, ipcRenderer } = require('electron');
 contextBridge.exposeInMainWorld('bichinho', {
   aoReceber: fn => ipcRenderer.on('pet-data', (e, d) => fn(d)),
   comecarOuPausar: () => ipcRenderer.send('pet-toggle'),
-  voltar: () => ipcRenderer.send('pet-back')
+  voltar: () => ipcRenderer.send('pet-back'),
+  agua: bebi => ipcRenderer.send('pet-water', !!bebi)
 });

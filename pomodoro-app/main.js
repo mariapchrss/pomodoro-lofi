@@ -63,7 +63,7 @@ function lugarGuardado(w, h) {
 function fixar(on) {
   if (!win || on === !!pet) return;
   if (on) {
-    const w = 150, h = 196, a = screen.getDisplayMatching(win.getBounds()).workArea;
+    const w = 150, h = PET_H, a = screen.getDisplayMatching(win.getBounds()).workArea;
     const p = lugarGuardado(w, h) || { x: a.x + a.width - w - 24, y: a.y + a.height - h - 24 };
     pet = new BrowserWindow({
       x: p.x, y: p.y, width: w, height: h, frame: false, transparent: true, resizable: false, maximizable: false, minimizable: false,
@@ -75,8 +75,9 @@ function fixar(on) {
     /* quando a janelinha termina de abrir, pede o desenho de novo (o primeiro envio pode ter chegado cedo demais) */
     pet.webContents.once('did-finish-load', () => { if (win) win.webContents.send('mini-state', true); });
     pet.once('ready-to-show', () => { if (pet) { pet.showInactive(); if (win && !TESTE) win.minimize(); } });
-    pet.on('moved', () => { try { const [x, y] = pet.getPosition(); fs.writeFileSync(LUGAR(), JSON.stringify({ x, y })); } catch (e) {} });
-    pet.on('closed', () => { pet = null; if (win) win.webContents.send('mini-state', false); });
+    /* guarda onde a pessoa deixou o bichinho (com o balão de água aberto a janela está mais alta: desconta) */
+    pet.on('moved', () => { try { const [x, y] = pet.getPosition(); fs.writeFileSync(LUGAR(), JSON.stringify({ x, y: y + (petAgua ? AGUA_H : 0) })); } catch (e) {} });
+    pet.on('closed', () => { pet = null; petAgua = false; if (win) win.webContents.send('mini-state', false); });
   } else {
     pet.close();
     if (win.isMinimized()) win.restore();
@@ -87,7 +88,19 @@ function fixar(on) {
 const daJanela = e => win && e.sender === win.webContents, doBichinho = e => pet && e.sender === pet.webContents;
 ipcMain.on('mini', (e, on) => { if (daJanela(e)) fixar(!!on); });
 ipcMain.on('mini-ask', e => e.sender.send('mini-state', !!pet));
-ipcMain.on('pet-data', (e, d) => { if (daJanela(e) && pet) pet.webContents.send('pet-data', d); });
+/* lembrete de água: a janelinha cresce para cima (cabe o balão "hora de beber água!") e volta quando a pessoa responde */
+const PET_H = 196, AGUA_H = 86;
+let petAgua = false;
+function balaoAgua(on) {
+  if (!pet || on === petAgua) return;
+  petAgua = on;
+  const b = pet.getBounds(), topo = screen.getDisplayMatching(b).workArea.y;
+  const h = PET_H + (on ? AGUA_H : 0), y = Math.max(topo, b.y + b.height - h);
+  pet.setBounds({ x: b.x, y, width: b.width, height: h });
+  if (on) pet.moveTop();
+}
+ipcMain.on('pet-data', (e, d) => { if (daJanela(e) && pet) { balaoAgua(!!d.agua); pet.webContents.send('pet-data', d); } });
+ipcMain.on('pet-water', (e, bebi) => { if (doBichinho(e) && win) win.webContents.send('do-water', !!bebi); });
 ipcMain.on('pet-toggle', e => { if (doBichinho(e) && win) win.webContents.send('do-toggle'); });
 ipcMain.on('pet-back', e => { if (doBichinho(e)) fixar(false); });
 
@@ -145,6 +158,14 @@ async function teste() {
     info.minimizada = win.isMinimized();
     info.tempoAndando = { antes: a, tresSegundosDepois: b };
     await pet.webContents.executeJavaScript(`document.getElementById('tg').click()`);   // deixa pausado para o próximo teste
+    /* lembrete de água (o "testar agora" do site, que não conta copo): o balão tem que aparecer no bichinho e sumir no "bebi!" */
+    await win.webContents.executeJavaScript(`document.getElementById('waterTest').click()`);
+    await espera(1500);
+    info.agua = { balao: await pet.webContents.executeJavaScript(`!document.getElementById('agua').hidden`), altura: pet.getBounds().height };
+    fs.writeFileSync(path.join(dir, 'agua.png'), (await pet.webContents.capturePage()).toPNG());
+    await pet.webContents.executeJavaScript(`document.getElementById('wy').click()`);
+    await espera(1500);
+    info.aguaDepois = { balao: await pet.webContents.executeJavaScript(`!document.getElementById('agua').hidden`), altura: pet.getBounds().height, popDoSiteFechou: await win.webContents.executeJavaScript(`document.getElementById('waterPop').hidden`) };
     if (pet) await pet.webContents.executeJavaScript(`document.getElementById('bk').click()`);
     await espera(800);
     info.voltou = { ligado: !!pet, janelaVisivel: win.isVisible() && !win.isMinimized() };
